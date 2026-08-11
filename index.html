@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Playlists | Pick Your Mood</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #1A1A2E;
+            --secondary: #D4A574;
+            --accent: #F5E6D3;
+
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-hover-border: rgba(255, 255, 255, 0.25);
+
+            --text: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.65);
+            --text-subtle: rgba(255, 255, 255, 0.3);
+
+            --backdrop-blur: 22px;
+            --radius-lg: 28px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+
+            --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.07);
+            --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text);
+            background-color: var(--primary);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse 60% 50% at 30% 20%, rgba(212, 165, 116, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(245, 230, 211, 0.05) 0%, transparent 60%);
+        }
+
+        /* ── Content ── */
+        .content {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 48px 24px 64px;
+            animation: fade-in 0.8s ease-out;
+        }
+
+        .header {
+            text-align: center;
+            max-width: 680px;
+            width: 100%;
+            margin-bottom: 48px;
+        }
+
+        .brand-tag {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 999px;
+            background: rgba(212, 165, 116, 0.1);
+            border: 1px solid rgba(212, 165, 116, 0.2);
+            color: var(--secondary);
+            margin-bottom: 16px;
+            animation: fade-slide-up 0.6s 0.1s both;
+        }
+
+        .brand-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+            font-size: clamp(2.25rem, 6vw, 3.5rem);
+            line-height: 1.1;
+            letter-spacing: -0.01em;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 32px rgba(0, 0, 0, 0.4);
+            animation: fade-slide-up 0.7s 0.2s both;
+        }
+
+        .brand-subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            animation: fade-slide-up 0.7s 0.3s both;
+        }
+
+        .divider {
+            width: 50px;
+            height: 2px;
+            margin: 20px auto 0;
+            border-radius: 2px;
+            background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+            animation: fade-slide-up 0.6s 0.4s both;
+        }
+
+        /* ── Mood Grid ── */
+        .mood-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1100px;
+            animation: fade-slide-up 0.8s 0.45s both;
+        }
+
+        .mood-card {
+            position: relative;
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--backdrop-blur));
+            -webkit-backdrop-filter: blur(var(--backdrop-blur));
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-glass);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        border-color 0.4s ease;
+            cursor: pointer;
+        }
+
+        .mood-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--glass-hover-border);
+        }
+
+        .mood-card-image {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            overflow: hidden;
+            background-color: #111;
+        }
+
+        .mood-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: block;
+        }
+
+        .mood-card:hover .mood-card-image img {
+            transform: scale(1.06);
+        }
+
+        .mood-card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                180deg,
+                transparent 40%,
+                rgba(0, 0, 0, 0.6) 100%
+            );
+        }
+
+        .mood-card-content {
+            padding: 18px 20px 20px;
+        }
+
+        .mood-card-name {
+            font-family: 'Poppins', system-ui, sans-serif;
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--text);
+            margin-bottom: 4px;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mood-card-arrow {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.3s ease;
+            opacity: 0.6;
+        }
+
+        .mood-card:hover .mood-card-arrow {
+            transform: translateX(3px);
+            opacity: 1;
+        }
+
+        .mood-card-description {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: 48px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-subtle);
+            letter-spacing: 0.02em;
+            animation: fade-in 0.6s 0.6s both;
+        }
+
+        .footer a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer a:hover {
+            color: var(--secondary);
+        }
+
+        /* ── Animations ── */
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        @keyframes fade-slide-up {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .content {
+                padding: 32px 16px 48px;
+            }
+            .header {
+                margin-bottom: 32px;
+            }
+            .mood-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .mood-card-content {
+                padding: 14px 16px 16px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .content, .brand-tag, .brand-title, .brand-subtitle, .divider,
+            .mood-card, .mood-card-image img {
+                animation: none !important;
+                transition: none !important;
+            }
+            .mood-card:hover {
+                transform: none !important;
+            }
+            .mood-card:hover .mood-card-image img {
+                transform: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="content">
+        <header class="header">
+            <span class="brand-tag">Immersive Mood Experience</span>
+            <h1 class="brand-title">Mood<br>Playlists</h1>
+            <p class="brand-subtitle">Five moods. Five worlds. Each one opens into a full-screen playlist experience with its own wallpaper, typography, and atmosphere.</p>
+            <div class="divider" aria-hidden="true"></div>
+        </header>
+
+        <div class="mood-grid">
+            <a href="/mood-sites/delux-saloon.html" class="mood-card">
+                <div class="mood-card-image">
+                    <img
+                        src="/mood-sites/images/delux-saloon.jpg"
+                        alt="Delux Saloon — vintage Indian street barbershop scene"
+                        loading="lazy"
+                        width="600"
+                        height="375">
+                    <div class="mood-card-overlay" aria-hidden="true"></div>
+                </div>
+                <div class="mood-card-content">
+                    <div class="mood-card-name">
+                        Delux Saloon
+                        <svg class="mood-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                    <p class="mood-card-description">Vintage barbershop charm meets golden-hour small-town community life.</p>
+                </div>
+            </a>
+
+            <a href="/mood-sites/auto.html" class="mood-card">
+                <div class="mood-card-image">
+                    <img
+                        src="/mood-sites/images/auto.jpg"
+                        alt="Auto — Indian auto rickshaw on a bustling street"
+                        loading="lazy"
+                        width="600"
+                        height="375">
+                    <div class="mood-card-overlay" aria-hidden="true"></div>
+                </div>
+                <div class="mood-card-content">
+                    <div class="mood-card-name">
+                        Auto
+                        <svg class="mood-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                    <p class="mood-card-description">The rhythmic heartbeat of Indian streets — three-wheelers, market chaos, and sun-soaked afternoons.</p>
+                </div>
+            </a>
+
+            <a href="/mood-sites/baarish.html" class="mood-card">
+                <div class="mood-card-image">
+                    <img
+                        src="/mood-sites/images/baarish.jpg"
+                        alt="Baarish — monsoon rain on an Indian city street"
+                        loading="lazy"
+                        width="600"
+                        height="375">
+                    <div class="mood-card-overlay" aria-hidden="true"></div>
+                </div>
+                <div class="mood-card-content">
+                    <div class="mood-card-name">
+                        Baarish
+                        <svg class="mood-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                    <p class="mood-card-description">Monsoon rains turn the city into a watercolor — every puddle a mirror of streetlights and sky.</p>
+                </div>
+            </a>
+
+            <a href="/mood-sites/roof.html" class="mood-card">
+                <div class="mood-card-image">
+                    <img
+                        src="/mood-sites/images/roof.jpg"
+                        alt="Roof — open rooftop at night with string lights"
+                        loading="lazy"
+                        width="600"
+                        height="375">
+                    <div class="mood-card-overlay" aria-hidden="true"></div>
+                </div>
+                <div class="mood-card-content">
+                    <div class="mood-card-name">
+                        Roof
+                        <svg class="mood-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                    <p class="mood-card-description">Starlit city skies and warm string lights — where conversations stretch into the night.</p>
+                </div>
+            </a>
+
+            <a href="/mood-sites/truck.html" class="mood-card">
+                <div class="mood-card-image">
+                    <img
+                        src="/mood-sites/images/truck.jpg"
+                        alt="Truck — vintage Indian truck on a highway at golden hour"
+                        loading="lazy"
+                        width="600"
+                        height="375">
+                    <div class="mood-card-overlay" aria-hidden="true"></div>
+                </div>
+                <div class="mood-card-content">
+                    <div class="mood-card-name">
+                        Truck
+                        <svg class="mood-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                    <p class="mood-card-description">Long highways, loaded wheels, and the quiet headspace that only the open road can give.</p>
+                </div>
+            </a>
+        </div>
+
+        <footer class="footer">
+            <span>&copy; 2026 Mood Playlists &middot; </span>
+            <a href="/mood-sites/index.html">Mood Suite</a>
+        </footer>
+    </main>
+</body>
+</html>

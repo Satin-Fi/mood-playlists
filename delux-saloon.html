@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delux Saloon | Mood Playlists</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #8B1A1A;
+            --secondary: #D4A574;
+            --accent: #F5E6D3;
+            --accent-muted: rgba(245,230,211,0.15);
+
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-hover-border: rgba(255, 255, 255, 0.25);
+
+            --text: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.65);
+            --text-subtle: rgba(255, 255, 255, 0.35);
+
+            --backdrop-blur: 24px;
+            --radius-lg: 28px;
+            --radius-md: 16px;
+
+            --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+            --shadow-hover: 0 16px 48px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.12);
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text);
+            background-color: var(--primary);
+            min-height: 100vh;
+        }
+
+        /* ── Background layer ── */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background-image: url('/mood-sites/images/delux-saloon.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                linear-gradient(180deg,
+                    rgba(139, 26, 26, 0.25) 0%,
+                    rgba(139, 26, 26, 0.45) 50%,
+                    rgba(139, 26, 26, 0.7) 100%
+                ),
+                linear-gradient(135deg,
+                    rgba(0,0,0,0.3) 0%,
+                    transparent 50%,
+                    rgba(0,0,0,0.15) 100%
+                );
+        }
+
+        /* ── Content ── */
+        .content {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 24px;
+            animation: fade-in 0.9s ease-out;
+        }
+
+        .hero {
+            text-align: center;
+            max-width: 780px;
+            width: 100%;
+        }
+
+        .mood-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            padding: 8px 20px;
+            border-radius: 999px;
+            background: var(--accent-muted);
+            border: 1px solid var(--glass-border);
+            color: var(--accent);
+            margin-bottom: 24px;
+            animation: fade-slide-up 0.7s 0.2s both;
+            backdrop-filter: blur(var(--backdrop-blur));
+        }
+
+        .title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+            font-size: clamp(3rem, 8vw, 5.5rem);
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+            text-shadow: 0 4px 40px rgba(0, 0, 0, 0.5);
+            animation: fade-slide-up 0.8s 0.3s both;
+        }
+
+        .subtitle {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            font-weight: 400;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 40px;
+            animation: fade-slide-up 0.8s 0.4s both;
+        }
+
+        .divider {
+            width: 60px;
+            height: 2px;
+            margin: 32px auto;
+            border-radius: 2px;
+            background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+            animation: fade-slide-up 0.7s 0.5s both;
+        }
+
+        /* ── Glass card ── */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--backdrop-blur));
+            -webkit-backdrop-filter: blur(var(--backdrop-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-glass);
+            padding: 24px;
+            width: 100%;
+            max-width: 800px;
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        border-color 0.35s ease;
+            animation: fade-slide-up 0.8s 0.55s both;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--glass-hover-border);
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* ── Back button ── */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 28px;
+            color: var(--text);
+            text-decoration: none;
+            font-family: 'Inter', system-ui, sans-serif;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 12px 24px;
+            border-radius: 999px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: fade-slide-up 0.7s 0.7s both;
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: var(--glass-hover-border);
+            transform: translateX(-3px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        .back-link svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .back-link:hover svg {
+            transform: translateX(-3px);
+        }
+
+        /* ── Footer ── */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 24px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-subtle);
+            letter-spacing: 0.02em;
+            z-index: 10;
+        }
+
+        .footer a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer a:hover {
+            color: var(--accent);
+        }
+
+        /* ── Animations ── */
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        @keyframes fade-slide-up {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float-gentle {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-8px); }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .content {
+                padding: 32px 16px;
+            }
+            .glass-card {
+                padding: 16px;
+            }
+            .title {
+                letter-spacing: -0.01em;
+            }
+        }
+
+        /* ── Reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+            .content, .mood-tag, .title, .subtitle, .divider,
+            .glass-card, .back-link, .footer {
+                animation: none !important;
+                transition: none !important;
+            }
+            .glass-card:hover {
+                transform: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-layer" aria-hidden="true"></div>
+    <div class="bg-overlay" aria-hidden="true"></div>
+
+    <main class="content">
+        <div class="hero">
+            <span class="mood-tag">A Mood</span>
+
+            <h1 class="title">Delux Saloon</h1>
+            <p class="subtitle">Warm, nostalgic small-town Indian street vibes — vintage barbershop charm meets golden-hour community life.</p>
+
+            <div class="divider" aria-hidden="true"></div>
+
+            <div class="glass-card">
+                <div class="video-wrapper">
+                    <!-- Replace with your Delux Saloon YouTube playlist ID -->
+                    <iframe
+                        src="https://www.youtube.com/embed/videoseries?list=PLTJ1PnzCWyFw&rel=0&modestbranding=1&playsinline=1&showinfo=0"
+                        title="Delux Saloon Playlist"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <a href="/mood-sites/index.html" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        All Moods
+    </a>
+
+    <footer class="footer">
+        <span>&copy; 2026 Mood Playlists &middot; </span>
+        <a href="/mood-sites/index.html">Mood Suite</a>
+    </footer>
+</body>
+</html>
