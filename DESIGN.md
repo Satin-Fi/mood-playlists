@@ -219,11 +219,11 @@ assets:
     - Playfair+Display:wght@700&display=swap
     - Poppins:wght@400;500;600;700&display=swap
   background-images:
-    saloon: "/mood-sites/images/delux-saloon.jpg"
-    auto: "/mood-sites/images/auto.jpg"
-    baarish: "/mood-sites/images/baarish.jpg"
-    roof: "/mood-sites/images/roof.jpg"
-    truck: "/mood-sites/images/truck.jpg"
+    saloon: "images/delux-saloon.jpg"
+    auto: "images/auto.jpg"
+    baarish: "images/baarish.jpg"
+    roof: "images/roof.jpg"
+    truck: "images/truck.jpg"
 
 design-rationale: >
   This system delivers an immersive, cinematic mood-experience where each page

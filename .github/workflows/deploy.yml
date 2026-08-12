@@ -2,8 +2,6 @@ name: Deploy to Vercel
 on:
   push:
     branches: [main]
-    paths:
-      - 'mood-sites/**'
   workflow_dispatch:
 
 jobs:
@@ -19,5 +17,5 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./mood-sites
+          working-directory: .
           vercel-args: '--prod'

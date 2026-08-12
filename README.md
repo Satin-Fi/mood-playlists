@@ -110,9 +110,9 @@ This project is a static site — no build step, no framework, no server. Deploy
 2. Go to [vercel.com/new](https://vercel.com/new)
 3. Click **Add New → Project** → **Import Git Repository**
 4. Select this repo
-5. Keep all defaults (Framework Preset: **Other / Static HTML**, Root Directory: leave as-is or set to `mood-sites/`)
-6. Click **Deploy**
+5. Keep all defaults (Framework Preset: **Other / Static HTML**, Root Directory: leave empty — the repo is flat, no subdirectory needed)
 
+6. Click **Deploy**
 ### Option B: Vercel CLI
 ```bash
 npm i -g vercel
@@ -127,10 +127,11 @@ This is a static site with zero backend dependencies. No `.env` variables are ne
 - YouTube embeds (www.youtube.com) — loaded via `<iframe>` per mood page
 
 ### GitHub Actions CI/CD
-A workflow at `.github/workflows/deploy.yml` can auto-deploy on every push to `main`. To enable:
+Push to `main` auto-deploys via the workflow at `.github/workflows/deploy.yml`. To enable:
+
 1. Get a Vercel token: `vercel login` then go to [vercel.com/account/tokens](https://vercel.com/account/tokens)
 2. Add repo secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
-3. The workflow deploys the `mood-sites/` directory as a static preview/prod site
+3. The workflow deploys the repo root as a static site
 
 ### Custom domain
 - Vercel → Project Settings → Domains → add your domain (e.g. `moods.yoursite.com`)

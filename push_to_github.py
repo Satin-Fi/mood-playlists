@@ -87,7 +87,7 @@ def main():
     
     owner = "Satin-Fi"
     repo_name = "mood-playlists"
-    base_path = r"C:\Users\Piyush\Downloads\Thundocs2\Pixel\mood-sites"
+    base_path = r"C:\Users\Piyush\Downloads\Thundocs2\mood-sites"
     
     print(f"Creating repository {owner}/{repo_name}...")
     try:
