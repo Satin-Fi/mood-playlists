@@ -327,6 +327,37 @@
             flex-shrink: 0;
         }
 
+        .radio-volume-input {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 64px;
+            height: 4px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.15);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .radio-volume-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .radio-volume-input::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+        }
+
         .radio-volume-slider {
             width: 64px;
             height: 4px;
@@ -342,46 +373,6 @@
             background: var(--accent);
             width: 70%;
             transition: width 0.15s ease;
-        }
-
-        /* ── Back button ── */
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(var(--backdrop-blur));
-            -webkit-backdrop-filter: blur(var(--backdrop-blur));
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-glass);
-            padding: 24px;
-            width: 100%;
-            max-width: 800px;
-            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-                        box-shadow 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-                        border-color 0.35s ease;
-            animation: fade-slide-up 0.8s 0.55s both;
-        }
-
-        .glass-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-hover);
-            border-color: var(--glass-hover-border);
-        }
-
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            background: rgba(0,0,0,0.3);
-        }
-
-        .video-wrapper iframe {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
         }
 
         /* ── Back button ── */
@@ -402,6 +393,7 @@
             backdrop-filter: blur(12px);
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             animation: fade-slide-up 0.7s 0.7s both;
+            cursor: pointer;
         }
 
         .back-link:hover {
@@ -419,6 +411,23 @@
 
         .back-link:hover svg {
             transform: translateX(-3px);
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
         }
 
         /* ── Footer ── */
@@ -467,7 +476,7 @@
             50%      { transform: translateY(-8px); }
         }
 
-        /* ── Radio player — mobile ── */
+        /* ── Radio player mobile ── */
         @media (max-width: 640px) {
             .radio-player {
                 flex-wrap: wrap;
@@ -499,6 +508,7 @@
                 min-width: 68px;
             }
         }
+
         @media (max-width: 640px) {
             .content {
                 padding: 32px 16px;
@@ -536,61 +546,22 @@
             <p class="subtitle">Warm, nostalgic small-town Indian street vibes — vintage barbershop charm meets golden-hour community life.</p>
 
             <div class="divider" aria-hidden="true"></div>
-
-            <div class="radio-player" id="radioPlayer">
-                <div class="radio-art">
-                    <img id="radioArt" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231a1a2e'/%3E%3Ctext x='50' y='62' text-anchor='middle' fill='%23D4A574' font-family='Inter' font-size='32' font-weight='700'%3E?%3C/text%3E%3C/svg%3E" alt="Now playing cover">
-                </div>
-                <div class="radio-info">
-                    <span class="radio-label">Deluxe Saloon radio</span>
-                    <span class="radio-title" id="radioTitle">Pick a track to start</span>
-                    <div class="radio-progress-wrap">
-                        <div class="radio-progress" id="radioProgress" role="slider" aria-label="Seek" tabindex="0">
-                            <div class="radio-progress-fill" id="radioProgressFill"></div>
-                        </div>
-                        <span class="radio-time" id="radioTime">0:00 / 0:00</span>
-                    </div>
-                </div>
-                <div class="radio-controls">
-                    <button class="radio-btn" id="radioPrev" aria-label="Previous track" title="Previous">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="19 20 9 12 19 4 19 20" />
-                            <line x1="5" y1="19" x2="5" y2="5" />
-                        </svg>
-                    </button>
-                    <button class="radio-btn radio-play" id="radioPlay" aria-label="Play" title="Play">
-                        <svg id="radioPlayIcon" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                            <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg>
-                    </button>
-                    <button class="radio-btn" id="radioNext" aria-label="Next track" title="Next">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="5 4 15 12 5 20 5 4" />
-                            <line x1="19" y1="5" x2="19" y2="19" />
-                        </svg>
-                    </button>
-                    <div class="radio-volume">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
-                        </svg>
-                        <div class="radio-volume-slider" id="radioVolume" role="slider" aria-label="Volume" tabindex="0">
-                            <div class="radio-volume-fill" id="radioVolumeFill"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
+    </main>
+
+    <!-- ── Radio Player ── -->
     <div class="radio-player" id="radioPlayer">
-        <img id="RadioArt" class="radio-art" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231a1a2e'/%3E%3Ctext x='50' y='62' text-anchor='middle' fill='%23D4A574' font-family='Inter' font-size='32' font-weight='700'%3E?%3C/text%3E%3C/svg%3E" alt="Album art">
+        <div class="radio-art">
+            <img id="RadioArt" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231a1a2e'/%3E%3Ctext x='50' y='62' text-anchor='middle' fill='%23D4A574' font-family='Inter' font-size='32' font-weight='700'%3E?%3C/text%3E%3C/svg%3E" alt="Now playing cover">
+        </div>
         <div class="radio-info">
             <span class="radio-label">Deluxe Saloon radio</span>
-            <span id="RadioTitle" class="radio-title">Ready to play</span>
+            <span id="RadioTitle" class="radio-title">Pick a track to start</span>
             <div class="radio-progress-wrap">
                 <div class="radio-progress" id="RadioProgress" role="slider" aria-label="Seek" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                     <div class="radio-progress-fill" id="RadioProgressFill"></div>
                 </div>
-                <span class="radio-time"><span id="RadioCurrent">0:00</span> / <span id="RadioTotal">0:00</span></span>
+                <span class="radio-time" id="RadioTime">0:00 / 0:00</span>
             </div>
         </div>
         <div class="radio-controls">
@@ -616,7 +587,9 @@
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
                 </svg>
-                <input class="radio-volume-input" id="RadioVolume" type="range" min="0" max="100" value="70" aria-label="Volume">
+                <div class="radio-volume-slider" id="radioVolumeSlider" role="slider" aria-label="Volume" tabindex="0">
+                    <div class="radio-volume-fill" id="radioVolumeFill"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -628,31 +601,44 @@
         All Moods
     </a>
 
-    <!-- YouTube IFrame API: drives the Delux Saloon radio playlist -->
+    <footer class="footer">
+        <span>&copy; 2026 Mood Playlists &middot; </span>
+        <a href="index.html">Mood Suite</a>
+    </footer>
+
+    <!-- ── YouTube IFrame API: Delux Saloon radio playlist driver ── -->
     <script>
         (function () {
             'use strict';
+
             var PLAYLIST_ID = 'PLTJ1PnzCWyFw';
+
+            // Boot the YouTube IFrame API
             var tag = document.createElement('script');
             tag.src = 'https://www.youtube.com/iframe_api';
             tag.async = true;
             document.head.appendChild(tag);
 
-            var player = null;
+            // ── DOM references ──
             var art = document.getElementById('RadioArt');
             var titleEl = document.getElementById('RadioTitle');
-            var currentEl = document.getElementById('RadioCurrent');
-            var totalEl = document.getElementById('RadioTotal');
-            var fillEl = document.getElementById('RadioProgressFill');
+            var progressFill = document.getElementById('RadioProgressFill');
             var progressEl = document.getElementById('RadioProgress');
+            var timeEl = document.getElementById('RadioTime');
             var playBtn = document.getElementById('RadioPlay');
             var playIcon = document.getElementById('RadioPlayIcon');
             var prevBtn = document.getElementById('RadioPrev');
             var nextBtn = document.getElementById('RadioNext');
-            var volumeInput = document.getElementById('RadioVolume');
+            var volumeSlider = document.getElementById('radioVolumeSlider');
+            var volumeFill = document.getElementById('radioVolumeFill');
+
+            // ── Player state ──
+            var player = null;
             var tickTimer = null;
             var ready = false;
+            var isPlaying = false;
 
+            // ── Helpers ──
             function fmt(sec) {
                 if (!sec || !isFinite(sec)) return '0:00';
                 sec = Math.max(0, Math.floor(sec));
@@ -661,39 +647,67 @@
                 return m + ':' + (s < 10 ? '0' : '') + s;
             }
 
+            function updateVolumeFill(val) {
+                var pct = Math.min(100, Math.max(0, parseInt(val, 10) || 0));
+                volumeFill.style.width = pct + '%';
+            }
+
+            // ── Player lifecycle ──
             function onReady() {
                 ready = true;
-                player.setVolume(parseInt(volumeInput.value, 10));
-                playBtn.addEventListener('click', togglePlay);
-                prevBtn.addEventListener('click', prevTrack);
-                nextBtn.addEventListener('click', nextTrack);
-                volumeInput.addEventListener('input', function () {
-                    if (player) player.setVolume(parseInt(volumeInput.value, 10));
-                });
-                progressEl.addEventListener('click', function (e) {
-                    if (!player || !player.getDuration) return;
-                    var rect = progressEl.getBoundingClientRect();
-                    var frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-                    var d = player.getDuration();
-                    if (isFinite(d) && d > 0) player.seekTo(frac * d, true);
-                });
+                player.setVolume(70);
+                updateVolumeFill(70);
+                attachEvents();
                 titleEl.textContent = 'Deluxe Saloon radio — tap play';
                 art.style.opacity = '1';
                 playBtn.disabled = false;
                 playBtn.style.opacity = '1';
             }
 
+            function attachEvents() {
+                playBtn.addEventListener('click', togglePlay);
+                prevBtn.addEventListener('click', prevTrack);
+                nextBtn.addEventListener('click', nextTrack);
+                volumeSlider.addEventListener('click', handleVolumeClick);
+                volumeSlider.addEventListener('keydown', handleVolumeKey);
+                progressEl.addEventListener('click', handleSeek);
+                progressEl.addEventListener('keydown', handleSeekKey);
+                document.addEventListener('keydown', handleGlobalKey);
+            }
+
+            function handleGlobalKey(e) {
+                if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    togglePlay();
+                }
+            }
+
+            function detachEvents() {
+                playBtn.removeEventListener('click', togglePlay);
+                prevBtn.removeEventListener('click', prevTrack);
+                nextBtn.removeEventListener('click', nextTrack);
+                volumeSlider.removeEventListener('click', handleVolumeClick);
+                volumeSlider.removeEventListener('keydown', handleVolumeKey);
+                progressEl.removeEventListener('click', handleSeek);
+                progressEl.removeEventListener('keydown', handleSeekKey);
+                document.removeEventListener('keydown', handleGlobalKey);
+            }
+
             function onStateChange(e) {
                 if (e.data === 1) { // PLAYING
-                    showPlay(false);
+                    isPlaying = true;
+                    showPlayPauseIcon(false);
                     startTick();
                     refreshTrackInfo();
                     var d = player.getDuration();
-                    if (isFinite(d)) totalEl.textContent = fmt(d);
+                    if (isFinite(d)) {
+                        timeEl.textContent = fmt(player.getCurrentTime()) + ' / ' + fmt(d);
+                    }
                 } else if (e.data === 2) { // PAUSED
-                    showPlay(true);
+                    isPlaying = false;
+                    showPlayPauseIcon(true);
                     stopTick();
-                    currentEl.textContent = fmt(player.getCurrentTime());
+                    timeEl.textContent = fmt(player.getCurrentTime()) + ' / ' + fmt(player.getDuration());
                 } else if (e.data === 0) { // ENDED
                     nextTrack();
                 }
@@ -713,13 +727,13 @@
                 }
             }
 
-            function showPlay(playing) {
-                if (playing) {
-                    playIcon.innerHTML = '<polygon points="8 5 19 12 8 19 8 5"/>';
+            function showPlayPauseIcon(showPlay) {
+                if (showPlay) {
+                    playIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
                     playBtn.setAttribute('aria-label', 'Play');
                     playBtn.title = 'Play';
                 } else {
-                    playIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+                    playIcon.innerHTML = '<polygon points="8 5 19 12 8 19 8 5"/>';
                     playBtn.setAttribute('aria-label', 'Pause');
                     playBtn.title = 'Pause';
                 }
@@ -728,10 +742,13 @@
             function togglePlay() {
                 if (!player || !ready) return;
                 var st = player.getPlayerState();
-                if (st === 1) { player.pauseVideo(); return; }
+                if (st === 1) {
+                    player.pauseVideo();
+                    return;
+                }
                 if (st === 2 || st === 0 || st === 5) {
                     if (!player.getVideoData().video_id) {
-                        player.cuePlaylist({list: PLAYLIST_ID});
+                        player.cuePlaylist({ list: PLAYLIST_ID });
                     }
                     player.playVideo();
                 }
@@ -740,207 +757,25 @@
             function prevTrack() {
                 if (!player || !ready) return;
                 var st = player.getPlayerState();
-                if (st === 1 || st === 2) player.prevVideo();
-                else togglePlay();
-            }
-
-            function nextTrack() {
-                if (!player || !ready) return;
-                var st = player.getPlayerState();
-                if (st === 1 || st === 2) player.nextVideo();
-                else togglePlay();
-            }
-
-            function startTick() {
-                stopTick();
-                tickTimer = setInterval(function () {
-                    if (!player) return;
-                    var t = player.getCurrentTime();
-                    var d = player.getDuration();
-                    if (d && isFinite(d) && d > 0) {
-                        currentEl.textContent = fmt(t);
-                        fillEl.style.width = ((t / d) * 100) + '%';
-                        progressEl.setAttribute('aria-valuenow', Math.round((t / d) * 100));
-                    }
-                }, 700);
-            }
-
-            function stopTick() {
-                if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
-            }
-
-            window.onYouTubeIframeAPIReady = function () {
-                var wrap = document.createElement('div');
-                wrap.id = 'ytEmbed';
-                wrap.style.cssText = 'position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
-                document.body.appendChild(wrap);
-                player = new YT.Player('ytEmbed', {
-                    height: '1', width: '1',
-                    videoId: 'N0jnLZxYwYc',
-                    playerVars: {
-                        playlist: PLAYLIST_ID, autoplay: 0, controls: 0,
-                        modestbranding: 1, iv_load_policy: 3, disablekb: 1,
-                        fs: 0, enablejsapi: 1, showinfo: 0, rel: 0,
-                        playsinline: 1, origin: window.location.origin
-                    },
-                    events: { onReady: onReady, onStateChange: onStateChange }
-                });
-            };
-        })();
-    </script>
-    <footer class="footer">
-        <span>&copy; 2026 Mood Playlists &middot; </span>
-        <a href="index.html">Mood Suite</a>
-    </footer>
-    <!-- YouTube IFrame API: playlist radio player -->
-    <script>
-        (function () {
-            'use strict';
-            var PLAYLIST = 'PLTJ1PnzCWyFw';
-
-            var art = document.getElementById('RadioArt');
-            var titleEl = document.getElementById('RadioTitle');
-            var currentEl = document.getElementById('RadioCurrent');
-            var totalEl = document.getElementById('RadioTotal');
-            var fillEl = document.getElementById('RadioProgressFill');
-            var progressEl = document.getElementById('RadioProgress');
-            var playBtn = document.getElementById('RadioPlay');
-            var playIcon = document.getElementById('RadioPlayIcon');
-            var prevBtn = document.getElementById('RadioPrev');
-            var nextBtn = document.getElementById('RadioNext');
-            var volumeInput = document.getElementById('RadioVolume');
-
-            var player = null;
-            var tickTimer = null;
-            var ready = false;
-
-            function fmt(sec) {
-                if (!sec || !isFinite(sec)) return '0:00';
-                sec = Math.max(0, Math.floor(sec));
-                var m = Math.floor(sec / 60);
-                var s = sec % 60;
-                return m + ':' + (s < 10 ? '0' : '') + s;
-            }
-
-            function loadApi() {
-                if (window.YT && window.YT.Player) { initPlayer(); return; }
-                var tag = document.createElement('script');
-                tag.src = 'https://www.youtube.com/iframe_api';
-                tag.async = true;
-                tag.onload = function () {
-                    if (window.YT && window.YT.Player) initPlayer();
-                    else { if (!window.onYouTubeIframeAPIReady) window.onYouTubeIframeAPIReady = initPlayer; }
-                };
-                document.head.appendChild(tag);
-            }
-
-            function initPlayer() {
-                if (player) return;
-                var wrap = document.createElement('div');
-                wrap.id = 'ytEmbed';
-                wrap.style.cssText = 'position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
-                document.body.appendChild(wrap);
-                player = new YT.Player('ytEmbed', {
-                    height: '1', width: '1',
-                    videoId: 'N0jnLZxYwYc',
-                    playerVars: {
-                        playlist: PLAYLIST, autoplay: 0, controls: 0,
-                        modestbranding: 1, iv_load_policy: 3, disablekb: 1,
-                        fs: 0, enablejsapi: 1, showinfo: 0, rel: 0,
-                        playsinline: 1, origin: window.location.origin
-                    },
-                    events: {
-                        onReady: onReady,
-                        onStateChange: onStateChange
-                    }
-                });
-            }
-
-            function onReady() {
-                ready = true;
-                player.setVolume(parseInt(volumeInput.value, 10));
-                playBtn.addEventListener('click', togglePlay);
-                prevBtn.addEventListener('click', prevTrack);
-                nextBtn.addEventListener('click', nextTrack);
-                volumeInput.addEventListener('input', function () {
-                    if (player) player.setVolume(parseInt(volumeInput.value, 10));
-                });
-                progressEl.addEventListener('click', seekFromEvent);
-                titleEl.textContent = 'Deluxe Saloon radio — tap play';
-                art.style.opacity = '1';
-                playBtn.disabled = false;
-                playBtn.style.opacity = '1';
-            }
-
-            function onStateChange(e) {
-                if (e.data === 1) { // PLAYING
-                    showPlay(false);
-                    startTick();
-                    refreshTrackInfo();
-                    var d = player.getDuration();
-                    if (isFinite(d)) totalEl.textContent = fmt(d);
-                } else if (e.data === 2) { // PAUSED
-                    showPlay(true);
-                    stopTick();
-                    currentEl.textContent = fmt(player.getCurrentTime());
-                } else if (e.data === 0) { // ENDED
-                    nextTrack();
-                }
-            }
-
-            function refreshTrackInfo() {
-                if (!player) return;
-                var data = player.getVideoData();
-                if (data && data.title) {
-                    titleEl.textContent = data.title.length > 80 ? data.title.slice(0, 80) + '…' : data.title;
-                }
-                var tn = (data && data.thumbnail && data.thumbnail.thumbnails) ?
-                    (data.thumbnail.thumbnails[1] || data.thumbnail.thumbnails[0]) : null;
-                if (tn && tn.url) {
-                    art.src = tn.url + '?v=' + (new Date()).getTime();
-                    art.style.opacity = '1';
-                }
-            }
-
-            function showPlay(playing) {
-                if (playing) {
-                    playIcon.innerHTML = '<polygon points="8 5 19 12 8 19 8 5"/>';
-                    playBtn.setAttribute('aria-label', 'Play');
-                    playBtn.title = 'Play';
+                if (st === 1 || st === 2) {
+                    player.prevVideo();
                 } else {
-                    playIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
-                    playBtn.setAttribute('aria-label', 'Pause');
-                    playBtn.title = 'Pause';
+                    togglePlay();
                 }
-            }
-
-            function togglePlay() {
-                if (!player || !ready) return;
-                var st = player.getPlayerState();
-                if (st === 1) { player.pauseVideo(); return; }
-                if (st === 2 || st === 0 || st === 5) {
-                    if (!player.getVideoData().video_id) {
-                        player.cuePlaylist({list: PLAYLIST});
-                    }
-                    player.playVideo();
-                }
-            }
-
-            function prevTrack() {
-                if (!player || !ready) return;
-                var st = player.getPlayerState();
-                if (st === 1 || st === 2) player.prevVideo();
-                else togglePlay();
             }
 
             function nextTrack() {
                 if (!player || !ready) return;
                 var st = player.getPlayerState();
-                if (st === 1 || st === 2) player.nextVideo();
-                else togglePlay();
+                if (st === 1 || st === 2) {
+                    player.nextVideo();
+                } else {
+                    togglePlay();
+                }
             }
 
-            function seekFromEvent(e) {
+            // ── Progress bar ──
+            function handleSeek(e) {
                 if (!player || !player.getDuration) return;
                 var rect = progressEl.getBoundingClientRect();
                 var frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
@@ -948,16 +783,56 @@
                 if (isFinite(d) && d > 0) player.seekTo(frac * d, true);
             }
 
+            function handleSeekKey(e) {
+                if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    var d = player.getDuration();
+                    var t = player.getCurrentTime();
+                    if (isFinite(d) && d > 0) {
+                        var delta = d * 0.05;
+                        var nt = e.key === 'ArrowRight' ? Math.min(d, t + delta) : Math.max(0, t - delta);
+                        player.seekTo(nt, true);
+                    }
+                }
+            }
+
+            // ── Volume ──
+            function handleVolumeClick(e) {
+                if (!player) return;
+                var rect = volumeSlider.getBoundingClientRect();
+                var pct = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+                player.setVolume(pct);
+                updateVolumeFill(pct);
+            }
+
+            function handleVolumeKey(e) {
+                if (!player) return;
+                var cur = player.getVolume();
+                if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    var nv = Math.min(100, cur + 5);
+                    player.setVolume(nv);
+                    updateVolumeFill(nv);
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    var nv = Math.max(0, cur - 5);
+                    player.setVolume(nv);
+                    updateVolumeFill(nv);
+                }
+            }
+
+            // ── Progress tick ──
             function startTick() {
                 stopTick();
                 tickTimer = setInterval(function () {
-                    if (!player) return;
+                    if (!player || !isPlaying) return;
                     var t = player.getCurrentTime();
                     var d = player.getDuration();
-                    if (d && isFinite(d) && d > 0) {
-                        currentEl.textContent = fmt(t);
-                        fillEl.style.width = ((t / d) * 100) + '%';
-                        progressEl.setAttribute('aria-valuenow', Math.round((t / d) * 100));
+                    if (isFinite(d) && d > 0 && isFinite(t)) {
+                        var pct = (t / d) * 100;
+                        progressFill.style.width = pct + '%';
+                        progressEl.setAttribute('aria-valuenow', Math.round(pct));
+                        timeEl.textContent = fmt(t) + ' / ' + fmt(d);
                     }
                 }, 700);
             }
@@ -966,10 +841,36 @@
                 if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
             }
 
-            var tag = document.createElement('script');
-            tag.src = 'https://www.youtube.com/iframe_api';
-            tag.async = true;
-            document.head.appendChild(tag);
+            // ── YouTube IFrame API ready ──
+            window.onYouTubeIframeAPIReady = function () {
+                var wrap = document.createElement('div');
+                wrap.id = 'ytEmbed';
+                wrap.style.cssText = 'position:absolute;opacity:0;pointer-events:none;width:32px;height:32px;overflow:hidden;';
+                document.body.appendChild(wrap);
+                player = new YT.Player('ytEmbed', {
+                    height: '1', width: '1',
+                    videoId: 'N0jnLZxYwYc',
+                    playerVars: {
+                        playlist: PLAYLIST_ID,
+                        autoplay: 0,
+                        controls: 0,
+                        modestbranding: 1,
+                        iv_load_policy: 3,
+                        disablekb: 1,
+                        fs: 0,
+                        enablejsapi: 1,
+                        showinfo: 0,
+                        rel: 0,
+                        playsinline: 1,
+                        origin: window.location.origin
+                    },
+                    events: {
+                        onReady: onReady,
+                        onStateChange: onStateChange
+                    }
+                });
+            };
         })();
     </script>
+</body>
 </html>
