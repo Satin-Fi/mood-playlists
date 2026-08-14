@@ -654,7 +654,7 @@
 
             // ── Player lifecycle ──
             function onReady() {
-                console.log('[Delux Saloon] onReady — player ready')
+                console.log('[roof] onReady — player ready')
                 ready = true;
                 player.setVolume(70);
                 updateVolumeFill(70);
@@ -680,10 +680,6 @@
                 if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
                     e.preventDefault();
                     togglePlay();
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 }
             }
 
@@ -699,7 +695,7 @@
             }
 
             function onStateChange(e) {
-                console.log('[Delux Saloon] stateChange: PLAYING (1)');
+                console.log('[roof] stateChange: PLAYING (1)');
                 if (e.data === 1) { // PLAYING
                     isPlaying = true;
                     showPlayPauseIcon(false);
@@ -708,32 +704,16 @@
                     var d = player.getDuration();
                     if (isFinite(d)) {
                         timeEl.textContent = fmt(player.getCurrentTime()) + ' / ' + fmt(d);
-                        } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
-                }
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
                     }
                 } else if (e.data === 2) { // PAUSED
-                    console.log('[Delux Saloon] stateChange: PAUSED (2)')
+                    console.log('[roof] stateChange: PAUSED (2)')
                     isPlaying = false;
                     showPlayPauseIcon(true);
                     stopTick();
                     timeEl.textContent = fmt(player.getCurrentTime()) + ' / ' + fmt(player.getDuration());
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 } else if (e.data === 0) { // ENDED
-                    console.log('[Delux Saloon] stateChange: ENDED (0)')
+                    console.log('[roof] stateChange: ENDED (0)')
                     nextTrack();
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 }
             }
 
@@ -742,20 +722,12 @@
                 var data = player.getVideoData();
                 if (data && data.title) {
                     titleEl.textContent = data.title.length > 80 ? data.title.slice(0, 80) + '…' : data.title;
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 }
                 var tn = (data && data.thumbnail && data.thumbnail.thumbnails) ?
                     (data.thumbnail.thumbnails[1] || data.thumbnail.thumbnails[0]) : null;
                 if (tn && tn.url) {
                     art.src = tn.url + '?v=' + (new Date()).getTime();
                     art.style.opacity = '1';
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 }
             }
 
@@ -764,44 +736,27 @@
                     playIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
                     playBtn.setAttribute('aria-label', 'Play');
                     playBtn.title = 'Play';
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 } else {
                     playIcon.innerHTML = '<polygon points="8 5 19 12 8 19 8 5"/>';
                     playBtn.setAttribute('aria-label', 'Pause');
                     playBtn.title = 'Pause';
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 }
             }
 
             function togglePlay() {
-                console.log('[Delux Saloon] togglePlay called, state:', player ? player.getPlayerState() : 'no player');
+                console.log('[roof] togglePlay called, state:', player ? player.getPlayerState() : 'no player');
                 if (!player || !ready) return;
                 var st = player.getPlayerState();
                 if (st === 1) {
                     player.pauseVideo();
                     return;
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 }
+                // UNSTARTED (0), ENDED (0 after last track), CUED (5)
                 if (st === 0 || st === 5) {
                     try {
                         player.playVideo();
-                        } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
-                }
-                    player.playVideo();
                     } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
+                        console.warn('[roof] playVideo failed, retrying with loadPlaylist', e);
                         player.loadPlaylist({ list: PLAYLIST_ID });
                     }
                 }
@@ -812,16 +767,8 @@
                 var st = player.getPlayerState();
                 if (st === 1 || st === 2) {
                     player.prevVideo();
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 } else {
                     togglePlay();
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 }
             }
 
@@ -830,16 +777,8 @@
                 var st = player.getPlayerState();
                 if (st === 1 || st === 2) {
                     player.nextVideo();
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 } else {
                     togglePlay();
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 }
             }
 
@@ -861,14 +800,6 @@
                         var delta = d * 0.05;
                         var nt = e.key === 'ArrowRight' ? Math.min(d, t + delta) : Math.max(0, t - delta);
                         player.seekTo(nt, true);
-                        } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
-                }
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
                     }
                 }
             }
@@ -890,19 +821,11 @@
                     var nv = Math.min(100, cur + 5);
                     player.setVolume(nv);
                     updateVolumeFill(nv);
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
                     e.preventDefault();
                     var nv = Math.max(0, cur - 5);
                     player.setVolume(nv);
                     updateVolumeFill(nv);
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
                 }
             }
 
@@ -918,14 +841,6 @@
                         progressFill.style.width = pct + '%';
                         progressEl.setAttribute('aria-valuenow', Math.round(pct));
                         timeEl.textContent = fmt(t) + ' / ' + fmt(d);
-                        } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
-                }
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
                     }
                 }, 700);
             }
@@ -956,22 +871,10 @@
                         rel: 0,
                         playsinline: 1,
                         origin: window.location.origin
-                        } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
-                },
+                    },
                     events: {
                         onReady: onReady,
                         onStateChange: onStateChange
-                        } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
-                }
-                    } catch (e) {
-                        console.warn('[$f] playVideo retry with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
                     }
                 });
             };
