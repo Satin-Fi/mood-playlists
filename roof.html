@@ -658,6 +658,8 @@
                 ready = true;
                 player.setVolume(70);
                 updateVolumeFill(70);
+                // Cue the playlist so the player has content to play
+                player.cuePlaylist({ list: PLAYLIST_ID });
                 attachEvents();
                 titleEl.textContent = 'Rooftop radio — tap play';
                 art.style.opacity = '1';
@@ -857,7 +859,6 @@
                 document.body.appendChild(wrap);
                 player = new YT.Player('ytEmbed', {
                     height: '1', width: '1',
-                    videoId: 'N0jnLZxYwYc',
                     playerVars: {
                         playlist: PLAYLIST_ID,
                         autoplay: 0,
