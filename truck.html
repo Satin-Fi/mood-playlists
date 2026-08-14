@@ -612,7 +612,12 @@
         (function () {
             'use strict';
 
-            var PLAYLIST_ID = 'PLTJ1PnzCWyFw';
+            var PREFIX = '[Truck] ';
+            // Verified-embeddable track list. We avoid loadPlaylist() because YouTube
+            // rejects an ENTIRE playlist (error 153) if any single video has embedding
+            // disabled. Driving per-video sidesteps that and lets us skip bad tracks.
+            var TRACKS = ['N0jnLZxYwYc','3NWMK2MRqIk','bga_0ziOOfQ','oFxbBeYhLqM','nNhv8A_rJTg','d3lZvNexPL0','CTuvMubzXpU','i1IsLVz6T9Q','5y_TCKNzAMI','fBylcT-TWZw','CTNgz5gb3D8','lFdSi01tpYM','dDR4oiyjUBA','otQmzlm-s7Q','tPNwGuu_rQ4'];
+            var current = 0;
 
             // Boot the YouTube IFrame API
             var tag = document.createElement('script');
@@ -655,76 +660,57 @@
 
             // ── Player lifecycle ──
             function onReady() {
-                console.log('[truck] onReady — player ready')
+                console.log(PREFIX + ' onReady — player ready');
                 ready = true;
                 player.setVolume(70);
                 updateVolumeFill(70);
-                // Cue the playlist so the player has content to play
-                player.cuePlaylist({ list: PLAYLIST_ID });
+                cueCurrent();
                 attachEvents();
-                titleEl.textContent = 'Truck Wala radio — tap play';
+                titleEl.textContent = 'Tap play to start the mix';
                 art.style.opacity = '1';
                 playBtn.disabled = false;
                 playBtn.style.opacity = '1';
             }
 
-            function attachEvents() {
-                playBtn.addEventListener('click', togglePlay);
-                prevBtn.addEventListener('click', prevTrack);
-                nextBtn.addEventListener('click', nextTrack);
-                volumeSlider.addEventListener('click', handleVolumeClick);
-                volumeSlider.addEventListener('keydown', handleVolumeKey);
-                progressEl.addEventListener('click', handleSeek);
-                progressEl.addEventListener('keydown', handleSeekKey);
-                document.addEventListener('keydown', handleGlobalKey);
+            function cueCurrent() {
+                try { player.cueVideoById(TRACKS[current]); }
+                catch (e) { console.warn(PREFIX + ' cue failed', e); }
             }
 
-            function handleGlobalKey(e) {
-                if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-                    e.preventDefault();
-                    togglePlay();
-                }
-            }
-
-            function detachEvents() {
-                playBtn.removeEventListener('click', togglePlay);
-                prevBtn.removeEventListener('click', prevTrack);
-                nextBtn.removeEventListener('click', nextTrack);
-                volumeSlider.removeEventListener('click', handleVolumeClick);
-                volumeSlider.removeEventListener('keydown', handleVolumeKey);
-                progressEl.removeEventListener('click', handleSeek);
-                progressEl.removeEventListener('keydown', handleSeekKey);
-                document.removeEventListener('keydown', handleGlobalKey);
+            function playCurrent() {
+                try { player.loadVideoById(TRACKS[current]); }
+                catch (e) { console.warn(PREFIX + ' play failed', e); nextTrack(); }
             }
 
             function onStateChange(e) {
-                console.log('[truck] stateChange: PLAYING (1)');
                 if (e.data === 1) { // PLAYING
+                    console.log(PREFIX + ' stateChange: PLAYING');
                     isPlaying = true;
                     showPlayPauseIcon(false);
                     startTick();
                     refreshTrackInfo();
-                    var d = player.getDuration();
-                    if (isFinite(d)) {
-                        timeEl.textContent = fmt(player.getCurrentTime()) + ' / ' + fmt(d);
-                    }
                 } else if (e.data === 2) { // PAUSED
-                    console.log('[truck] stateChange: PAUSED (2)')
+                    console.log(PREFIX + ' stateChange: PAUSED');
                     isPlaying = false;
                     showPlayPauseIcon(true);
                     stopTick();
                     timeEl.textContent = fmt(player.getCurrentTime()) + ' / ' + fmt(player.getDuration());
                 } else if (e.data === 0) { // ENDED
-                    console.log('[truck] stateChange: ENDED (0)')
+                    console.log(PREFIX + ' stateChange: ENDED -> next');
                     nextTrack();
                 }
+            }
+
+            function onError(e) {
+                console.warn(PREFIX + ' player error ' + e.data + ' on track ' + current + ', skipping');
+                nextTrack();
             }
 
             function refreshTrackInfo() {
                 if (!player) return;
                 var data = player.getVideoData();
                 if (data && data.title) {
-                    titleEl.textContent = data.title.length > 80 ? data.title.slice(0, 80) + '…' : data.title;
+                    titleEl.textContent = data.title.length > 80 ? data.title.slice(0, 80) + '\u2026' : data.title;
                 }
                 var tn = (data && data.thumbnail && data.thumbnail.thumbnails) ?
                     (data.thumbnail.thumbnails[1] || data.thumbnail.thumbnails[0]) : null;
@@ -747,7 +733,7 @@
             }
 
             function togglePlay() {
-                console.log('[truck] togglePlay called, state:', player ? player.getPlayerState() : 'no player');
+                console.log(PREFIX + ' togglePlay called, state:', player ? player.getPlayerState() : 'no player');
                 if (!player || !ready) return;
                 var st = player.getPlayerState();
                 if (st === 1) {
@@ -755,39 +741,35 @@
                     showPlayPauseIcon(true);
                     return;
                 }
-                // UNSTARTED (0), ENDED (0), CUED (5): start the playlist
-                console.log('[truck] starting playlist');
-                try {
-                    player.loadPlaylist({ list: PLAYLIST_ID, index: 0 });
-                } catch (e) {
-                    console.warn('[truck] loadPlaylist failed, trying playVideo', e);
-                    try { player.playVideo(); } catch (e2) { console.error(e2); }
-                }
-                // Safety retry if playback hasn't started shortly
-                setTimeout(function () {
-                    if (player && player.getPlayerState() !== 1) {
-                        console.warn('[truck] playback did not start, retrying');
-                        try { player.loadPlaylist({ list: PLAYLIST_ID, index: 0 }); } catch (e) {}
-                    }
-                }, 1500);
+                // UNSTARTED (0/5), CUED (5): start current track
+                playCurrent();
             }
 
             function prevTrack() {
-                if (!player || !ready) return;
-                var st = player.getPlayerState();
-                if (st === 1 || st === 2) {
-                    player.prevVideo();
-                } else {
-                    togglePlay();
-                }
+                current = (current - 1 + TRACKS.length) % TRACKS.length;
+                if (isPlaying) playCurrent(); else cueCurrent();
             }
 
             function nextTrack() {
-                if (!player || !ready) return;
-                var st = player.getPlayerState();
-                if (st === 1 || st === 2) {
-                    player.nextVideo();
-                } else {
+                current = (current + 1) % TRACKS.length;
+                if (isPlaying) playCurrent(); else cueCurrent();
+            }
+
+            // ── Events ──
+            function attachEvents() {
+                playBtn.addEventListener('click', togglePlay);
+                prevBtn.addEventListener('click', prevTrack);
+                nextBtn.addEventListener('click', nextTrack);
+                volumeSlider.addEventListener('click', handleVolumeClick);
+                volumeSlider.addEventListener('keydown', handleVolumeKey);
+                progressEl.addEventListener('click', handleSeek);
+                progressEl.addEventListener('keydown', handleSeekKey);
+                document.addEventListener('keydown', handleGlobalKey);
+            }
+
+            function handleGlobalKey(e) {
+                if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
                     togglePlay();
                 }
             }
@@ -868,7 +850,6 @@
                 player = new YT.Player('ytEmbed', {
                     height: '1', width: '1',
                     playerVars: {
-                        playlist: PLAYLIST_ID,
                         autoplay: 0,
                         controls: 0,
                         modestbranding: 1,
@@ -883,7 +864,8 @@
                     },
                     events: {
                         onReady: onReady,
-                        onStateChange: onStateChange
+                        onStateChange: onStateChange,
+                        onError: onError
                     }
                 });
             };
