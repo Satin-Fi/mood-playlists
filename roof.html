@@ -195,6 +195,7 @@
             min-width: 0;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             gap: 4px;
         }
 
@@ -751,17 +752,24 @@
                 var st = player.getPlayerState();
                 if (st === 1) {
                     player.pauseVideo();
+                    showPlayPauseIcon(true);
                     return;
                 }
-                // UNSTARTED (0), ENDED (0 after last track), CUED (5)
-                if (st === 0 || st === 5) {
-                    try {
-                        player.playVideo();
-                    } catch (e) {
-                        console.warn('[roof] playVideo failed, retrying with loadPlaylist', e);
-                        player.loadPlaylist({ list: PLAYLIST_ID });
-                    }
+                // UNSTARTED (0), ENDED (0), CUED (5): start the playlist
+                console.log('[roof] starting playlist');
+                try {
+                    player.loadPlaylist({ list: PLAYLIST_ID, index: 0 });
+                } catch (e) {
+                    console.warn('[roof] loadPlaylist failed, trying playVideo', e);
+                    try { player.playVideo(); } catch (e2) { console.error(e2); }
                 }
+                // Safety retry if playback hasn't started shortly
+                setTimeout(function () {
+                    if (player && player.getPlayerState() !== 1) {
+                        console.warn('[roof] playback did not start, retrying');
+                        try { player.loadPlaylist({ list: PLAYLIST_ID, index: 0 }); } catch (e) {}
+                    }
+                }, 1500);
             }
 
             function prevTrack() {
