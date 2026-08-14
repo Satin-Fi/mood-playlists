@@ -654,6 +654,7 @@
 
             // ── Player lifecycle ──
             function onReady() {
+                console.log('[Delux Saloon] onReady — player ready')
                 ready = true;
                 player.setVolume(70);
                 updateVolumeFill(70);
@@ -694,6 +695,7 @@
             }
 
             function onStateChange(e) {
+                console.log('[Delux Saloon] stateChange: PLAYING (1)');
                 if (e.data === 1) { // PLAYING
                     isPlaying = true;
                     showPlayPauseIcon(false);
@@ -704,11 +706,13 @@
                         timeEl.textContent = fmt(player.getCurrentTime()) + ' / ' + fmt(d);
                     }
                 } else if (e.data === 2) { // PAUSED
+                    console.log('[Delux Saloon] stateChange: PAUSED (2)')
                     isPlaying = false;
                     showPlayPauseIcon(true);
                     stopTick();
                     timeEl.textContent = fmt(player.getCurrentTime()) + ' / ' + fmt(player.getDuration());
                 } else if (e.data === 0) { // ENDED
+                    console.log('[Delux Saloon] stateChange: ENDED (0)')
                     nextTrack();
                 }
             }
@@ -740,17 +744,21 @@
             }
 
             function togglePlay() {
+                console.log('[Delux Saloon] togglePlay called, state:', player ? player.getPlayerState() : 'no player');
                 if (!player || !ready) return;
                 var st = player.getPlayerState();
                 if (st === 1) {
                     player.pauseVideo();
                     return;
                 }
-                if (st === 2 || st === 0 || st === 5) {
-                    if (!player.getVideoData().video_id) {
-                        player.cuePlaylist({ list: PLAYLIST_ID });
+                // UNSTARTED (0), ENDED (0 after last track), CUED (5)
+                if (st === 0 || st === 5) {
+                    try {
+                        player.playVideo();
+                    } catch (e) {
+                        console.warn('[Delux Saloon] playVideo failed, retrying with loadPlaylist', e);
+                        player.loadPlaylist({ list: PLAYLIST_ID });
                     }
-                    player.playVideo();
                 }
             }
 
