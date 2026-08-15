@@ -989,6 +989,12 @@ main {
 }
 
 .chat-panel {
+  --chat-accent-send: #c45c4a;
+  --chat-accent-send-hover: #d46958;
+  --chat-mine-bg: #b8544c;
+  --chat-mine-bg-hi: #c9635a;
+  --chat-mine-text: #fff;
+  --chat-mine-mention: #fde8d8;
   position: fixed;
   top: 0;
   right: 0;
@@ -1095,7 +1101,7 @@ main {
 
 .chat-gate__input:focus,
 .chat-compose__input:focus {
-  border-color: rgba(255, 255, 255, 0.38);
+  border-color: color-mix(in srgb, var(--chat-accent-send) 48%, rgba(255, 255, 255, 0.28));
   background: rgba(0, 0, 0, 0.38);
 }
 
@@ -1103,21 +1109,29 @@ main {
   width: 100%;
   margin-top: 0.75rem;
   padding: 0.72rem 1rem;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 999px;
-  background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #6366f1 100%);
+  background: var(--chat-accent-send);
   color: #fff;
   font-family: var(--ui);
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 18px rgba(168, 85, 247, 0.35);
-  transition: transform var(--swift), box-shadow var(--swift);
+  box-shadow:
+    0 4px 16px rgba(196, 92, 74, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transition:
+    transform var(--swift),
+    box-shadow var(--swift),
+    background var(--swift);
 }
 
 .chat-gate__btn:hover {
+  background: var(--chat-accent-send-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(168, 85, 247, 0.45);
+  box-shadow:
+    0 6px 20px rgba(196, 92, 74, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .chat-body {
@@ -1305,8 +1319,8 @@ main {
 }
 
 .chat-reaction-pill.is-mine {
-  border-color: rgba(168, 85, 247, 0.65);
-  background: rgba(168, 85, 247, 0.22);
+  border-color: color-mix(in srgb, var(--chat-accent-send) 58%, transparent);
+  background: color-mix(in srgb, var(--chat-accent-send) 24%, transparent);
 }
 
 .chat-reaction-pill__emoji {
@@ -1321,34 +1335,45 @@ main {
 
 .chat-msg__bubble {
   position: relative;
-  padding: 0.55rem 0.75rem 0.45rem;
+  padding: 0.62rem 0.82rem 0.5rem;
   border-radius: 1.15rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  border: 1px solid transparent;
   word-break: break-word;
 }
 
 .chat-msg--other .chat-msg__bubble {
   background: var(--chat-bg, rgba(255, 255, 255, 0.12));
-  border-bottom-left-radius: 0.3rem;
+  border-color: color-mix(in srgb, var(--chat-border, var(--chat-accent)) 32%, transparent);
+  border-bottom-left-radius: 0.32rem;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .chat-msg--mine .chat-msg__bubble {
-  background: linear-gradient(135deg, #7c3aed 0%, #db2777 45%, #4f46e5 100%);
-  border-bottom-right-radius: 0.3rem;
-  box-shadow: 0 3px 14px rgba(124, 58, 237, 0.35);
+  background: linear-gradient(
+    180deg,
+    var(--chat-mine-bg-hi) 0%,
+    var(--chat-mine-bg) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.12);
+  border-bottom-right-radius: 0.32rem;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 .chat-msg__text {
   margin: 0;
-  padding-right: 2.5rem;
+  padding-right: 2.55rem;
   font-family: var(--ui);
   font-size: 0.86rem;
-  line-height: 1.45;
+  line-height: 1.48;
   color: var(--chat-text, #fff);
 }
 
 .chat-msg--mine .chat-msg__text {
-  color: #fff;
+  color: var(--chat-mine-text);
 }
 
 .chat-msg__time {
@@ -1443,7 +1468,7 @@ main {
 
 .chat-mentions__item.is-active,
 .chat-mentions__item:hover {
-  background: rgba(168, 85, 247, 0.28);
+  background: color-mix(in srgb, var(--chat-accent-send) 26%, transparent);
 }
 
 .chat-mentions__item.is-self {
@@ -1474,13 +1499,13 @@ main {
 }
 
 .chat-msg--mine .chat-mention {
-  color: #fef08a;
-  text-shadow: 0 0 10px rgba(254, 240, 138, 0.35);
+  color: var(--chat-mine-mention);
+  text-decoration-color: rgba(255, 255, 255, 0.42);
 }
 
 .chat-msg--other .chat-mention {
   color: var(--chat-accent, rgba(255, 255, 255, 0.95));
-  filter: brightness(1.12);
+  text-decoration-color: color-mix(in srgb, var(--chat-accent) 55%, transparent);
 }
 
 .chat-compose__send {
@@ -1489,18 +1514,26 @@ main {
   width: 2.35rem;
   height: 2.35rem;
   flex: none;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  background: linear-gradient(135deg, #a855f7 0%, #ec4899 55%, #6366f1 100%);
+  background: var(--chat-accent-send);
   color: #fff;
   cursor: pointer;
-  box-shadow: 0 3px 12px rgba(168, 85, 247, 0.4);
-  transition: transform var(--swift), box-shadow var(--swift);
+  box-shadow:
+    0 3px 12px rgba(196, 92, 74, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transition:
+    transform var(--swift),
+    box-shadow var(--swift),
+    background var(--swift);
 }
 
 .chat-compose__send:hover {
+  background: var(--chat-accent-send-hover);
   transform: scale(1.06);
-  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.5);
+  box-shadow:
+    0 4px 16px rgba(196, 92, 74, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .chat-compose__send:disabled {

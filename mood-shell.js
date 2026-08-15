@@ -303,21 +303,21 @@ function fmtTime(iso) {
   }
 }
 
-/* ── Chat color palette (IG-inspired) ───────────────────────── */
+/* ── Chat color palette (muted solids for dark panel) ───────── */
 
 const CHAT_PALETTE = [
-  { bg: '#ff6b6b', accent: '#ff8787', text: '#fff' },
-  { bg: '#a78bfa', accent: '#c4b5fd', text: '#fff' },
-  { bg: '#2dd4bf', accent: '#5eead4', text: '#0f172a' },
-  { bg: '#fb923c', accent: '#fdba74', text: '#1c1917' },
-  { bg: '#4ade80', accent: '#86efac', text: '#14532d' },
-  { bg: '#f472b6', accent: '#f9a8d4', text: '#fff' },
-  { bg: '#38bdf8', accent: '#7dd3fc', text: '#0c4a6e' },
-  { bg: '#fbbf24', accent: '#fcd34d', text: '#451a03' },
-  { bg: '#e879f9', accent: '#f0abfc', text: '#fff' },
-  { bg: '#34d399', accent: '#6ee7b7', text: '#064e3b' },
-  { bg: '#818cf8', accent: '#a5b4fc', text: '#fff' },
-  { bg: '#f87171', accent: '#fca5a5', text: '#fff' },
+  { bg: '#6e4f5a', accent: '#a67d88', text: '#f8f4f5' },
+  { bg: '#4d6474', accent: '#7d9aab', text: '#f2f6f8' },
+  { bg: '#556b5c', accent: '#8aa895', text: '#f4f7f5' },
+  { bg: '#7a5f4f', accent: '#a88972', text: '#faf6f2' },
+  { bg: '#5c5670', accent: '#8f89a8', text: '#f3f2f6' },
+  { bg: '#4a6170', accent: '#7399ab', text: '#f0f5f7' },
+  { bg: '#8a5548', accent: '#b07a68', text: '#fdf8f6' },
+  { bg: '#5f6b52', accent: '#8d9a7d', text: '#f5f6f2' },
+  { bg: '#6a5768', accent: '#9a8596', text: '#f6f3f5' },
+  { bg: '#7a5842', accent: '#a67d62', text: '#faf5f0' },
+  { bg: '#465a4e', accent: '#6f8a78', text: '#f2f6f4' },
+  { bg: '#565468', accent: '#8583a0', text: '#f1f0f4' },
 ];
 
 function hashDisplayName(name) {
@@ -423,7 +423,7 @@ function renderMessages(rows, opts = {}) {
       }
       const c = colorForUser(m.display_name);
       return `
-    <article class="chat-msg chat-msg--other" data-message-id="${escapeHtml(m.id)}" style="--chat-bg:${c.bg};--chat-accent:${c.accent};--chat-text:${c.text}">
+    <article class="chat-msg chat-msg--other" data-message-id="${escapeHtml(m.id)}" style="--chat-bg:${c.bg};--chat-accent:${c.accent};--chat-text:${c.text};--chat-border:${c.accent}">
       <span class="chat-msg__name">${escapeHtml(m.display_name)}</span>
       <div class="chat-msg__stack">
         ${reactionBar}
