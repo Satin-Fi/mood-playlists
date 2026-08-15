@@ -1237,21 +1237,38 @@ main {
     transform var(--swift);
 }
 
+.chat-reactions-bar.is-floating {
+  position: fixed;
+  bottom: auto;
+  z-index: 60;
+  transform: scale(1);
+}
+
 .chat-msg--mine .chat-reactions-bar {
   left: auto;
   right: 0;
   transform: translateY(4px) scale(0.96);
 }
 
+.chat-msg--mine .chat-reactions-bar.is-floating {
+  left: 0;
+  right: auto;
+  transform: scale(1);
+}
+
 .chat-msg__stack:hover .chat-reactions-bar,
 .chat-msg__stack.is-reacting .chat-reactions-bar {
   opacity: 1;
   pointer-events: auto;
+}
+
+.chat-msg__stack:hover .chat-reactions-bar:not(.is-floating),
+.chat-msg__stack.is-reacting .chat-reactions-bar:not(.is-floating) {
   transform: translate(-50%, 0) scale(1);
 }
 
-.chat-msg--mine .chat-msg__stack:hover .chat-reactions-bar,
-.chat-msg--mine .chat-msg__stack.is-reacting .chat-reactions-bar {
+.chat-msg--mine .chat-msg__stack:hover .chat-reactions-bar:not(.is-floating),
+.chat-msg--mine .chat-msg__stack.is-reacting .chat-reactions-bar:not(.is-floating) {
   transform: translateY(0) scale(1);
 }
 

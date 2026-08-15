@@ -136,6 +136,8 @@ let lastReactionsSig = '';
 let chatMessagesCache = [];
 let activeReactionBar = null;
 let longPressTimer = null;
+const REACTION_BAR_EDGE_PAD = 10;
+const REACTION_BAR_GAP = 6;
 
 const mentionState = {
   open: false,
@@ -229,6 +231,8 @@ function buildChatPanel() {
   chatEls.messages.addEventListener('pointerup', onMessagePointerUp);
   chatEls.messages.addEventListener('pointercancel', onMessagePointerUp);
   chatEls.messages.addEventListener('pointerleave', onMessagePointerUp);
+  chatEls.messages.addEventListener('scroll', repositionVisibleReactionBars, { passive: true });
+  window.addEventListener('resize', repositionVisibleReactionBars, { passive: true });
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && chatEls.panel.classList.contains('is-open')) closeChat();
@@ -437,6 +441,91 @@ function renderMessages(rows, opts = {}) {
     })
     .join('');
   if (stickScroll) chatEls.messages.scrollTop = chatEls.messages.scrollHeight;
+  bindReactionBarStacks();
+  repositionVisibleReactionBars();
+}
+
+function getReactionBarClampBounds() {
+  const panel = chatEls?.panel;
+  if (!panel) return null;
+  const panelRect = panel.getBoundingClientRect();
+  const head = panel.querySelector('.chat-panel__head');
+  const headBottom = head ? head.getBoundingClientRect().bottom : panelRect.top;
+  return {
+    minX: panelRect.left + REACTION_BAR_EDGE_PAD,
+    maxX: panelRect.right - REACTION_BAR_EDGE_PAD,
+    minY: headBottom + REACTION_BAR_EDGE_PAD,
+    maxY: panelRect.bottom - REACTION_BAR_EDGE_PAD,
+  };
+}
+
+function positionReactionBar(bar, stack) {
+  const bubble = stack?.querySelector('.chat-msg__bubble');
+  const bounds = getReactionBarClampBounds();
+  if (!bar || !bubble || !bounds) return;
+
+  bar.classList.add('is-floating');
+  bar.style.position = 'fixed';
+  bar.style.left = '0';
+  bar.style.top = '0';
+  bar.style.right = 'auto';
+  bar.style.bottom = 'auto';
+  bar.style.transform = 'scale(1)';
+
+  const barW = bar.offsetWidth;
+  const barH = bar.offsetHeight;
+  const bubbleRect = bubble.getBoundingClientRect();
+
+  let left = bubbleRect.left + bubbleRect.width / 2 - barW / 2;
+  left = Math.max(bounds.minX, Math.min(left, bounds.maxX - barW));
+
+  let top = bubbleRect.top - barH - REACTION_BAR_GAP;
+  if (top < bounds.minY) {
+    top = bubbleRect.bottom + REACTION_BAR_GAP;
+    bar.dataset.flipBelow = '1';
+  } else {
+    delete bar.dataset.flipBelow;
+  }
+  top = Math.max(bounds.minY, Math.min(top, bounds.maxY - barH));
+
+  bar.style.left = `${left}px`;
+  bar.style.top = `${top}px`;
+}
+
+function resetReactionBar(bar) {
+  if (!bar) return;
+  bar.classList.remove('is-floating');
+  bar.style.position = '';
+  bar.style.left = '';
+  bar.style.top = '';
+  bar.style.right = '';
+  bar.style.bottom = '';
+  bar.style.transform = '';
+  delete bar.dataset.flipBelow;
+}
+
+function repositionVisibleReactionBars() {
+  if (!chatEls?.messages) return;
+  chatEls.messages.querySelectorAll('.chat-msg__stack.is-reacting, .chat-msg__stack:hover').forEach((stack) => {
+    const bar = stack.querySelector('.chat-reactions-bar');
+    if (bar) positionReactionBar(bar, stack);
+  });
+}
+
+function bindReactionBarStacks() {
+  if (!chatEls?.messages) return;
+  chatEls.messages.querySelectorAll('.chat-msg__stack').forEach((stack) => {
+    stack.addEventListener('mouseenter', () => {
+      const bar = stack.querySelector('.chat-reactions-bar');
+      if (bar) positionReactionBar(bar, stack);
+    });
+    stack.addEventListener('mouseleave', () => {
+      if (!stack.classList.contains('is-reacting')) {
+        const bar = stack.querySelector('.chat-reactions-bar');
+        if (bar) resetReactionBar(bar);
+      }
+    });
+  });
 }
 
 function escapeHtml(str) {
@@ -650,6 +739,7 @@ function onMentionClick(e) {
 }
 
 function closeReactionBars() {
+  chatEls?.messages.querySelectorAll('.chat-reactions-bar.is-floating').forEach(resetReactionBar);
   activeReactionBar = null;
   chatEls?.messages.querySelectorAll('.chat-msg__stack.is-reacting').forEach((el) => {
     el.classList.remove('is-reacting');
@@ -660,6 +750,8 @@ function openReactionBar(stack, messageId) {
   closeReactionBars();
   activeReactionBar = messageId;
   stack.classList.add('is-reacting');
+  const bar = stack.querySelector('.chat-reactions-bar');
+  if (bar) positionReactionBar(bar, stack);
 }
 
 function onMessagePointerDown(e) {
@@ -756,7 +848,11 @@ function applyOptimisticReaction(messageId, emoji) {
   msg.reactions = reactions;
   renderMessages(chatMessagesCache);
   const stack = chatEls.messages.querySelector(`[data-message-id="${CSS.escape(messageId)}"] .chat-msg__stack`);
-  if (stack) stack.classList.add('is-reacting');
+  if (stack) {
+    stack.classList.add('is-reacting');
+    const bar = stack.querySelector('.chat-reactions-bar');
+    if (bar) positionReactionBar(bar, stack);
+  }
 }
 
 async function toggleReaction(messageId, emoji) {
