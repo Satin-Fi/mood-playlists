@@ -311,15 +311,20 @@ function sanitizeBody(body) {
 }
 
 function parseBody(req) {
-  if (req.body && typeof req.body === 'object') return req.body;
-  if (typeof req.body === 'string') {
-    try {
-      return JSON.parse(req.body);
-    } catch {
-      return null;
+  try {
+    const raw = req.body;
+    if (raw && typeof raw === 'object' && !Buffer.isBuffer(raw)) return raw;
+    if (typeof raw === 'string') {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
     }
+    return raw || null;
+  } catch {
+    return null;
   }
-  return req.body || null;
 }
 
 module.exports = async function handler(req, res) {
