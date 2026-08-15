@@ -1,0 +1,16 @@
+{
+  "playlists": {
+    "delux-saloon": "PLTJ1PnzCWyFw",
+    "auto": "PLTJ1PnzCWyFw",
+    "baarish": "PLTJ1PnzCWyFw",
+    "roof": "PLTJ1PnzCWyFw",
+    "truck": "PLeatb7hupNV_AWUl_7ttbsKeCQh8tF5N4"
+  },
+  "file_prefix": {
+    "delux-saloon": "saloon",
+    "auto": "auto",
+    "baarish": "baarish",
+    "roof": "roof",
+    "truck": "truck"
+  }
+}
