@@ -312,8 +312,11 @@ async function fetchMessages(scroll = false) {
   if (!room) return;
   try {
     const res = await fetch(`/api/chat/messages?room=${encodeURIComponent(room)}`);
-    if (!res.ok) throw new Error('unavailable');
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showStatus(data.error || 'Chat is warming up. Try again in a moment.', true);
+      return;
+    }
     const rows = data.messages || [];
     const newest = rows.length ? rows[rows.length - 1].id : null;
     if (newest !== lastSeen || scroll) {
