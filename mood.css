@@ -1257,6 +1257,98 @@ main {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.chat-compose__wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-compose__wrap .chat-compose__input {
+  width: 100%;
+}
+
+.chat-mentions {
+  position: absolute;
+  bottom: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.3rem 0;
+  list-style: none;
+  max-height: 11rem;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.75rem;
+  background: rgba(22, 20, 26, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.45);
+  z-index: 12;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+.chat-mentions[hidden] {
+  display: none;
+}
+
+.chat-mentions__item {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-family: var(--ui);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--swift);
+}
+
+.chat-mentions__item.is-active,
+.chat-mentions__item:hover {
+  background: rgba(168, 85, 247, 0.28);
+}
+
+.chat-mentions__item.is-self {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.chat-mention {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--swift);
+}
+
+.chat-mention:hover,
+.chat-mention:focus-visible {
+  opacity: 0.85;
+}
+
+.chat-msg--mine .chat-mention {
+  color: #fef08a;
+  text-shadow: 0 0 10px rgba(254, 240, 138, 0.35);
+}
+
+.chat-msg--other .chat-mention {
+  color: var(--chat-accent, rgba(255, 255, 255, 0.95));
+  filter: brightness(1.12);
+}
+
 .chat-compose__send {
   display: grid;
   place-items: center;

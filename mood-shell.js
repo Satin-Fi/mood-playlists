@@ -20,6 +20,8 @@ const CHAT = {
   maxBody: 280,
 };
 
+const REACTION_EMOJIS = ['❤️', '👍', '😂', '😮', '😢', '🔥'];
+
 const shellCfg = {
   moodId: null,
   ...window.MOOD_CONFIG,
@@ -130,6 +132,15 @@ function mountChatButton() {
 let chatEls = null;
 let pollTimer = null;
 let lastSeen = null;
+let chatMessagesCache = [];
+
+const mentionState = {
+  open: false,
+  start: 0,
+  filter: '',
+  selectedIndex: 0,
+  users: [],
+};
 
 function buildChatPanel() {
   if (document.getElementById('chatPanel')) return;
@@ -166,7 +177,10 @@ function buildChatPanel() {
       <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-relevant="additions"></div>
       <p class="chat-status" id="chatStatus" hidden></p>
       <form class="chat-compose" id="chatForm">
-        <input id="chatInput" class="chat-compose__input" type="text" maxlength="280" autocomplete="off" placeholder="Say something nice…" />
+        <div class="chat-compose__wrap">
+          <ul class="chat-mentions" id="chatMentions" hidden role="listbox" aria-label="Tag a user"></ul>
+          <input id="chatInput" class="chat-compose__input" type="text" maxlength="280" autocomplete="off" placeholder="Say something nice…" />
+        </div>
         <button type="submit" class="chat-compose__send" aria-label="Send message">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
             <path d="M3.4 20.6l17.8-8.4a1 1 0 000-1.8L3.4 2a1 1 0 00-1.5.9v6.2a1 1 0 00.7.9L14 12 2.6 14a1 1 0 00-.7.9v6.2a1 1 0 001.5.9z"/>
@@ -187,6 +201,7 @@ function buildChatPanel() {
     status: panel.querySelector('#chatStatus'),
     form: panel.querySelector('#chatForm'),
     input: panel.querySelector('#chatInput'),
+    mentions: panel.querySelector('#chatMentions'),
     nameInput: panel.querySelector('#chatNameInput'),
     nameBtn: panel.querySelector('#chatNameBtn'),
     openBtn: () => document.getElementById('chatOpen'),
@@ -203,6 +218,10 @@ function buildChatPanel() {
     }
   });
   chatEls.form.addEventListener('submit', sendMessage);
+  chatEls.input.addEventListener('input', onChatInput);
+  chatEls.input.addEventListener('keydown', onChatInputKeydown);
+  chatEls.mentions.addEventListener('click', onMentionDropdownClick);
+  chatEls.messages.addEventListener('click', onMentionClick);
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && chatEls.panel.classList.contains('is-open')) closeChat();
@@ -306,6 +325,7 @@ function colorForUser(name) {
 
 function renderMessages(rows) {
   const me = getDisplayName().toLowerCase();
+  const knownNames = getRoomUsers();
   if (!rows.length) {
     chatEls.messages.innerHTML = `
       <div class="chat-empty">
@@ -318,11 +338,12 @@ function renderMessages(rows) {
     .map((m) => {
       const isMine = me && m.display_name.toLowerCase() === me;
       const time = fmtTime(m.created_at);
+      const bodyHtml = formatMessageWithMentions(m.body, knownNames);
       if (isMine) {
         return `
     <article class="chat-msg chat-msg--mine">
       <div class="chat-msg__bubble">
-        <p class="chat-msg__text">${escapeHtml(m.body)}</p>
+        <p class="chat-msg__text">${bodyHtml}</p>
         <time class="chat-msg__time" datetime="${m.created_at}">${time}</time>
       </div>
     </article>`;
@@ -332,7 +353,7 @@ function renderMessages(rows) {
     <article class="chat-msg chat-msg--other" style="--chat-bg:${c.bg};--chat-accent:${c.accent};--chat-text:${c.text}">
       <span class="chat-msg__name">${escapeHtml(m.display_name)}</span>
       <div class="chat-msg__bubble">
-        <p class="chat-msg__text">${escapeHtml(m.body)}</p>
+        <p class="chat-msg__text">${bodyHtml}</p>
         <time class="chat-msg__time" datetime="${m.created_at}">${time}</time>
       </div>
     </article>`;
@@ -347,6 +368,208 @@ function escapeHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function getRoomUsers() {
+  const names = new Set();
+  for (const m of chatMessagesCache) {
+    const name = (m.display_name || '').trim();
+    if (name.length >= 2) names.add(name);
+  }
+  return [...names].sort((a, b) => a.localeCompare(b));
+}
+
+function formatMessageWithMentions(text, knownNames) {
+  if (!text) return '';
+  if (!knownNames.length) return escapeHtml(text);
+
+  const names = [...knownNames].sort((a, b) => b.length - a.length);
+  const parts = [];
+  let i = 0;
+
+  while (i < text.length) {
+    if (text[i] === '@') {
+      let matched = null;
+      for (const name of names) {
+        const slice = text.slice(i + 1, i + 1 + name.length);
+        if (slice.toLowerCase() === name.toLowerCase()) {
+          const after = text[i + 1 + name.length];
+          if (!after || /[\s.,!?;:)\]]/.test(after)) {
+            matched = name;
+            break;
+          }
+        }
+      }
+      if (matched) {
+        parts.push({ type: 'mention', name: matched });
+        i += 1 + matched.length;
+        continue;
+      }
+    }
+    let j = i;
+    while (j < text.length && text[j] !== '@') j += 1;
+    parts.push({ type: 'text', value: text.slice(i, j) });
+    i = j;
+  }
+
+  return parts
+    .map((p) => {
+      if (p.type === 'mention') {
+        return `<button type="button" class="chat-mention" data-mention="${escapeHtml(p.name)}">${escapeHtml('@' + p.name)}</button>`;
+      }
+      return escapeHtml(p.value);
+    })
+    .join('');
+}
+
+function getMentionContext(input) {
+  const val = input.value;
+  const pos = input.selectionStart ?? val.length;
+  const before = val.slice(0, pos);
+  const atIdx = before.lastIndexOf('@');
+  if (atIdx === -1) return null;
+
+  const afterAt = before.slice(atIdx + 1);
+  if (/\s/.test(afterAt)) return null;
+  if (afterAt.length > 32) return null;
+
+  return { start: atIdx, filter: afterAt };
+}
+
+function getMentionCandidates(filter) {
+  const me = getDisplayName().toLowerCase();
+  const q = filter.toLowerCase();
+  return getRoomUsers()
+    .filter((name) => {
+      if (name.toLowerCase() === me) return false;
+      if (!q) return true;
+      return name.toLowerCase().startsWith(q);
+    })
+    .slice(0, 8)
+    .map((name) => ({ name, isSelf: false }));
+}
+
+function hideMentionDropdown() {
+  mentionState.open = false;
+  mentionState.users = [];
+  mentionState.selectedIndex = 0;
+  if (chatEls?.mentions) {
+    chatEls.mentions.hidden = true;
+    chatEls.mentions.innerHTML = '';
+  }
+}
+
+function updateMentionDropdown() {
+  if (!chatEls?.mentions) return;
+
+  const users = mentionState.users;
+  if (!users.length) {
+    hideMentionDropdown();
+    return;
+  }
+
+  chatEls.mentions.hidden = false;
+  chatEls.mentions.innerHTML = users
+    .map((user, idx) => {
+      const active = idx === mentionState.selectedIndex ? ' is-active' : '';
+      const selfCls = user.isSelf ? ' is-self' : '';
+      return `<li role="option" aria-selected="${idx === mentionState.selectedIndex}">
+        <button type="button" class="chat-mentions__item${active}${selfCls}" data-idx="${idx}">${escapeHtml(user.name)}</button>
+      </li>`;
+    })
+    .join('');
+}
+
+function showMentionDropdown(ctx) {
+  const users = getMentionCandidates(ctx.filter);
+  if (!users.length) {
+    hideMentionDropdown();
+    return;
+  }
+
+  mentionState.open = true;
+  mentionState.start = ctx.start;
+  mentionState.filter = ctx.filter;
+  mentionState.users = users;
+  mentionState.selectedIndex = 0;
+  updateMentionDropdown();
+}
+
+function insertMention(name) {
+  const input = chatEls.input;
+  const ctx = getMentionContext(input) || { start: mentionState.start };
+  const val = input.value;
+  const end = input.selectionStart ?? val.length;
+  const before = val.slice(0, ctx.start);
+  const after = val.slice(end);
+  const mention = `@${name} `;
+  input.value = before + mention + after;
+  const newPos = before.length + mention.length;
+  input.setSelectionRange(newPos, newPos);
+  hideMentionDropdown();
+  input.focus();
+}
+
+function onChatInput() {
+  const ctx = getMentionContext(chatEls.input);
+  if (!ctx) {
+    hideMentionDropdown();
+    return;
+  }
+  showMentionDropdown(ctx);
+}
+
+function onChatInputKeydown(e) {
+  if (!mentionState.open) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    mentionState.selectedIndex = Math.min(
+      mentionState.selectedIndex + 1,
+      mentionState.users.length - 1,
+    );
+    updateMentionDropdown();
+    return;
+  }
+
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    mentionState.selectedIndex = Math.max(mentionState.selectedIndex - 1, 0);
+    updateMentionDropdown();
+    return;
+  }
+
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const user = mentionState.users[mentionState.selectedIndex];
+    if (user) insertMention(user.name);
+    return;
+  }
+
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    hideMentionDropdown();
+  }
+}
+
+function onMentionDropdownClick(e) {
+  const btn = e.target.closest('.chat-mentions__item');
+  if (!btn || btn.classList.contains('is-self')) return;
+  const idx = Number(btn.dataset.idx);
+  const user = mentionState.users[idx];
+  if (user) insertMention(user.name);
+}
+
+function onMentionClick(e) {
+  const btn = e.target.closest('.chat-mention');
+  if (!btn || !chatEls?.input) return;
+  const name = btn.dataset.mention;
+  if (!name) return;
+  chatEls.input.value = `@${name} `;
+  chatEls.input.focus();
+  const len = chatEls.input.value.length;
+  chatEls.input.setSelectionRange(len, len);
+  hideMentionDropdown();
 }
 
 function showStatus(msg, isError = false) {
@@ -373,6 +596,7 @@ async function fetchMessages(scroll = false) {
       return;
     }
     const rows = data.messages || [];
+    chatMessagesCache = rows;
     const newest = rows.length ? rows[rows.length - 1].id : null;
     if (newest !== lastSeen || scroll) {
       renderMessages(rows);
@@ -424,6 +648,7 @@ async function sendMessage(e) {
       return;
     }
     chatEls.input.value = '';
+    hideMentionDropdown();
     await fetchMessages(true);
   } catch {
     showStatus('Network hiccup. Try again.', true);
