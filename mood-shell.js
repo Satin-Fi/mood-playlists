@@ -273,22 +273,70 @@ function fmtTime(iso) {
   }
 }
 
+/* ── Chat color palette (IG-inspired) ───────────────────────── */
+
+const CHAT_PALETTE = [
+  { bg: '#ff6b6b', accent: '#ff8787', text: '#fff' },
+  { bg: '#a78bfa', accent: '#c4b5fd', text: '#fff' },
+  { bg: '#2dd4bf', accent: '#5eead4', text: '#0f172a' },
+  { bg: '#fb923c', accent: '#fdba74', text: '#1c1917' },
+  { bg: '#4ade80', accent: '#86efac', text: '#14532d' },
+  { bg: '#f472b6', accent: '#f9a8d4', text: '#fff' },
+  { bg: '#38bdf8', accent: '#7dd3fc', text: '#0c4a6e' },
+  { bg: '#fbbf24', accent: '#fcd34d', text: '#451a03' },
+  { bg: '#e879f9', accent: '#f0abfc', text: '#fff' },
+  { bg: '#34d399', accent: '#6ee7b7', text: '#064e3b' },
+  { bg: '#818cf8', accent: '#a5b4fc', text: '#fff' },
+  { bg: '#f87171', accent: '#fca5a5', text: '#fff' },
+];
+
+function hashDisplayName(name) {
+  let hash = 0;
+  const s = String(name).toLowerCase().trim();
+  for (let i = 0; i < s.length; i += 1) {
+    hash = (hash << 5) - hash + s.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function colorForUser(name) {
+  return CHAT_PALETTE[hashDisplayName(name) % CHAT_PALETTE.length];
+}
+
 function renderMessages(rows) {
+  const me = getDisplayName().toLowerCase();
   if (!rows.length) {
-    chatEls.messages.innerHTML = `<p class="chat-empty">No messages yet. Say hello.</p>`;
+    chatEls.messages.innerHTML = `
+      <div class="chat-empty">
+        <span class="chat-empty__icon" aria-hidden="true">💬</span>
+        <p class="chat-empty__text">No messages yet. Say hello!</p>
+      </div>`;
     return;
   }
   chatEls.messages.innerHTML = rows
-    .map(
-      (m) => `
-    <article class="chat-msg">
-      <header class="chat-msg__head">
-        <span class="chat-msg__name">${escapeHtml(m.display_name)}</span>
-        <time class="chat-msg__time" datetime="${m.created_at}">${fmtTime(m.created_at)}</time>
-      </header>
-      <p class="chat-msg__text">${escapeHtml(m.body)}</p>
-    </article>`,
-    )
+    .map((m) => {
+      const isMine = me && m.display_name.toLowerCase() === me;
+      const time = fmtTime(m.created_at);
+      if (isMine) {
+        return `
+    <article class="chat-msg chat-msg--mine">
+      <div class="chat-msg__bubble">
+        <p class="chat-msg__text">${escapeHtml(m.body)}</p>
+        <time class="chat-msg__time" datetime="${m.created_at}">${time}</time>
+      </div>
+    </article>`;
+      }
+      const c = colorForUser(m.display_name);
+      return `
+    <article class="chat-msg chat-msg--other" style="--chat-bg:${c.bg};--chat-accent:${c.accent};--chat-text:${c.text}">
+      <span class="chat-msg__name">${escapeHtml(m.display_name)}</span>
+      <div class="chat-msg__bubble">
+        <p class="chat-msg__text">${escapeHtml(m.body)}</p>
+        <time class="chat-msg__time" datetime="${m.created_at}">${time}</time>
+      </div>
+    </article>`;
+    })
     .join('');
   chatEls.messages.scrollTop = chatEls.messages.scrollHeight;
 }
