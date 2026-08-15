@@ -1,0 +1,58 @@
+/* Shared coming-soon mood placeholders */
+
+.bg {
+  background:
+    radial-gradient(ellipse at 50% 88%, rgba(120, 80, 50, 0.5) 0%, transparent 52%),
+    linear-gradient(180deg, #0a0810 0%, #1a1018 38%, #2a1818 68%, #6a3820 100%);
+}
+
+.bg__layer--1,
+.bg__layer--2 {
+  opacity: 0;
+}
+
+.mood-cafe .bg {
+  background:
+    radial-gradient(ellipse at 40% 80%, rgba(180, 120, 70, 0.55) 0%, transparent 50%),
+    linear-gradient(180deg, #0c0a08 0%, #1e1410 40%, #3a2218 100%);
+}
+
+.mood-pan-shop .bg {
+  background:
+    radial-gradient(ellipse at 60% 85%, rgba(40, 140, 80, 0.45) 0%, transparent 50%),
+    linear-gradient(180deg, #060c0a 0%, #102018 40%, #1a3020 100%);
+}
+
+.mood-chai-tapri .bg {
+  background:
+    radial-gradient(ellipse at 50% 90%, rgba(200, 130, 50, 0.6) 0%, transparent 52%),
+    linear-gradient(180deg, #100a06 0%, #241608 40%, #4a2810 100%);
+}
+
+.mood-ocean .bg {
+  background:
+    radial-gradient(ellipse at 50% 70%, rgba(40, 120, 180, 0.5) 0%, transparent 55%),
+    linear-gradient(180deg, #040810 0%, #0a1828 40%, #123850 100%);
+}
+
+.mood-mountain .bg {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(180, 200, 220, 0.35) 0%, transparent 50%),
+    linear-gradient(180deg, #080c10 0%, #142028 40%, #1a3040 100%);
+}
+
+.mood-suhana-safar .bg {
+  background:
+    radial-gradient(ellipse at 50% 88%, rgba(196, 52, 18, 0.55) 0%, transparent 52%),
+    linear-gradient(180deg, #071018 0%, #1a2030 40%, #3a2018 100%);
+}
+
+.mood-mehfil .bg {
+  background:
+    radial-gradient(ellipse at 50% 80%, rgba(140, 60, 100, 0.5) 0%, transparent 52%),
+    linear-gradient(180deg, #100810 0%, #201020 40%, #381828 100%);
+}
+
+.logo {
+  font-weight: 700;
+}

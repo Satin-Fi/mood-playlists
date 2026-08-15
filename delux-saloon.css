@@ -1,16 +1,19 @@
 /* Delux Saloon — warm barbershop palette */
 
 :root {
-  --logo-top: 16vh;
-  --logo-size: clamp(2.6rem, 7.5vw, 5.5rem);
+  --logo-top: 15vh;
+  --logo-size: clamp(2.4rem, 7.2vw, 5.2rem);
   --body: "Playfair Display", Georgia, "Times New Roman", serif;
   --quote-font: "Playfair Display", Georgia, serif;
+  --saloon-amber: #e8a45c;
+  --saloon-burgundy: #6b1f28;
 }
 
 .bg {
   background:
-    radial-gradient(ellipse at 50% 88%, rgba(196, 100, 48, 0.68) 0%, transparent 52%),
-    linear-gradient(180deg, #120608 0%, #2a0f0f 36%, #4a1818 68%, #b85a28 100%);
+    radial-gradient(ellipse at 50% 90%, rgba(196, 100, 48, 0.72) 0%, transparent 54%),
+    radial-gradient(ellipse at 18% 12%, rgba(107, 31, 40, 0.35) 0%, transparent 42%),
+    linear-gradient(180deg, #0e0406 0%, #1e0a0c 34%, #3a1218 66%, #9c4420 100%);
 }
 
 .bg__layer--1 {
@@ -18,10 +21,11 @@
     url("images/delux-saloon-bg-1.webp") type("image/webp"),
     url("images/delux-saloon-bg-1.jpg")
   );
+  background-position: center 42%;
 }
 
 .bg__layer--2 {
-  background-position: center 38%;
+  background-position: center 36%;
 }
 
 .bg__layer--2.is-armed {
@@ -33,11 +37,73 @@
 
 .bg__scrim {
   background:
-    radial-gradient(ellipse at center, transparent 30%, rgba(40, 8, 8, 0.55) 100%),
+    radial-gradient(ellipse at center, transparent 28%, rgba(40, 8, 8, 0.58) 100%),
     linear-gradient(
       to bottom,
-      rgba(60, 12, 12, 0.42) 0%,
-      rgba(0, 0, 0, 0.1) 34%,
-      rgba(0, 0, 0, 0.58) 100%
+      rgba(60, 12, 12, 0.48) 0%,
+      rgba(0, 0, 0, 0.08) 32%,
+      rgba(0, 0, 0, 0.22) 55%,
+      rgba(0, 0, 0, 0.62) 100%
     );
+}
+
+.logo {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  filter: drop-shadow(0 6px 28px rgba(0, 0, 0, 0.55));
+}
+
+.presence__dot,
+.presence__dot::after {
+  background: var(--saloon-amber);
+  box-shadow: 0 0 10px rgba(232, 164, 92, 0.85);
+}
+
+.presence__label {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.presence__count {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.bumper__text {
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(255, 245, 235, 0.86);
+}
+
+.player {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow:
+    0 10px 42px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.meta__title {
+  font-family: var(--ui);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.meta__artist {
+  font-family: var(--ui);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.mood-pill.is-active {
+  color: var(--saloon-burgundy);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --logo-top: 14vh;
+  }
 }

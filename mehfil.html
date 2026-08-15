@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Mehfil | Mood Playlists</title>
+    <meta name="description" content="Mehfil mood — coming soon to Mood Playlists." />
+    <meta name="theme-color" content="#381828" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="mood.css" />
+    <link rel="stylesheet" href="coming-soon.css" />
+  </head>
+  <body class="mood-mehfil">
+    <div class="bg" aria-hidden="true"><div class="bg__layer bg__layer--1 is-active"></div><div class="bg__scrim"></div></div>
+    <div class="grain" aria-hidden="true"></div>
+    <header class="topbar">
+      <div class="topbar-start"><a class="home" href="index.html">All moods</a><div class="clock" id="clock"></div></div>
+      <div class="presence" aria-live="polite"><span class="presence__dot"></span><span class="presence__count" id="listeners">274</span><span class="presence__label">in the mehfil</span></div>
+      <nav class="links" aria-label="Site links"></nav>
+    </header>
+    <main>
+      <h1 class="logo">Mehfil</h1>
+      <div class="dock">
+        <section class="coming-soon" aria-label="Coming soon">
+          <p class="coming-soon__tag">Coming soon</p>
+          <h2 class="coming-soon__title">Mehfil</h2>
+          <p class="coming-soon__text">Candlelight, ghazals, and a room full of strangers who feel like old friends.</p>
+        </section>
+      </div>
+    </main>
+    <script>window.MOOD_CONFIG={moodId:'mehfil',pageTitle:'Mehfil'};</script>
+    <script src="mood-shell.js"></script>
+    <script>document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}).toLowerCase();</script>
+  </body>
+</html>
