@@ -1,0 +1,27 @@
+/* Baarish — monsoon mood */
+
+:root {
+  --logo-top: 15vh;
+  --logo-size: clamp(2.8rem, 8vw, 5.8rem);
+  --body: "Playfair Display", Georgia, serif;
+  --quote-font: "Playfair Display", Georgia, serif;
+}
+
+.bg {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(72, 120, 140, 0.45) 0%, transparent 55%),
+    linear-gradient(180deg, #0c1820 0%, #1a3040 50%, #0a1218 100%);
+}
+
+.bg__layer--1 {
+  background-image: url("images/baarish.jpg");
+}
+
+.bg__scrim {
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 30, 45, 0.45) 0%,
+    rgba(0, 0, 0, 0.12) 40%,
+    rgba(0, 0, 0, 0.62) 100%
+  );
+}

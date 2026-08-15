@@ -1,0 +1,27 @@
+/* Auto — street energy */
+
+:root {
+  --logo-top: 15vh;
+  --logo-size: clamp(3rem, 9vw, 6rem);
+  --body: "Playfair Display", Georgia, serif;
+  --quote-font: "Playfair Display", Georgia, serif;
+}
+
+.bg {
+  background:
+    radial-gradient(ellipse at 30% 70%, rgba(255, 193, 7, 0.28) 0%, transparent 50%),
+    linear-gradient(180deg, #1a2838 0%, #243550 45%, #141820 100%);
+}
+
+.bg__layer--1 {
+  background-image: url("images/auto.jpg");
+}
+
+.bg__scrim {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.22) 0%,
+    rgba(0, 0, 0, 0.06) 35%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}

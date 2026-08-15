@@ -1,0 +1,27 @@
+/* Roof — rooftop dusk */
+
+:root {
+  --logo-top: 14vh;
+  --logo-size: clamp(3rem, 9vw, 6.2rem);
+  --body: "Playfair Display", Georgia, serif;
+  --quote-font: "Playfair Display", Georgia, serif;
+}
+
+.bg {
+  background:
+    radial-gradient(ellipse at 50% 15%, rgba(255, 140, 60, 0.35) 0%, transparent 55%),
+    linear-gradient(180deg, #1a1028 0%, #302050 42%, #120a1a 100%);
+}
+
+.bg__layer--1 {
+  background-image: url("images/roof.jpg");
+}
+
+.bg__scrim {
+  background: linear-gradient(
+    to bottom,
+    rgba(40, 20, 60, 0.35) 0%,
+    rgba(0, 0, 0, 0.08) 32%,
+    rgba(0, 0, 0, 0.58) 100%
+  );
+}

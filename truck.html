@@ -15,6 +15,7 @@
       href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Yatra+One&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="mood.css" />
     <link rel="stylesheet" href="truck.css" />
   </head>
   <body>
@@ -170,6 +171,33 @@
     </noscript>
 
     <script src="truck-tracks.js"></script>
-    <script src="truck.js"></script>
+    <script>
+      window.MOOD_CONFIG = {
+        pageTitle: 'Truck Wala',
+        tracksJson: 'truck-tracks.json',
+        listenerMin: 500,
+        listenerMax: 800,
+        hornEnabled: true,
+        hornSrc: 'images/horn.mp3',
+        quoteLines: [
+          'क्यों मरते तो बेवफा सनम के लिए, दो गज जमीन मिलेगी दफन के लिए।',
+          'बुरी नज़र वाले तेरा मुँह काला',
+          'देखो मगर प्यार से',
+          'ओके टाटा, फिर मिलेंगे',
+          'मेरा भारत महान',
+          'जय माता दी',
+          'रब राखा',
+          'साइड प्लीज़',
+          'हॉर्न दो, राह लो',
+          'काम बोलता है',
+          'धीरे चलो, घर कोई इंतज़ार कर रहा है',
+          'सफ़र सुहाना हो',
+          'यारों का यार',
+          'आगे बढ़ो, पीछे मत देखो',
+          'दम है तो क्रॉस कर, नहीं तो बर्दाश्त कर।',
+        ],
+      };
+    </script>
+    <script src="mood-player.js"></script>
   </body>
 </html>

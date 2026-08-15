@@ -1,0 +1,27 @@
+/* Delux Saloon — warm barbershop palette */
+
+:root {
+  --logo-top: 16vh;
+  --logo-size: clamp(2.6rem, 7.5vw, 5.5rem);
+  --body: "Playfair Display", Georgia, "Times New Roman", serif;
+  --quote-font: "Playfair Display", Georgia, serif;
+}
+
+.bg {
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(212, 165, 116, 0.35) 0%, transparent 52%),
+    linear-gradient(180deg, #2a0f0f 0%, #5c1a1a 42%, #1a0808 100%);
+}
+
+.bg__layer--1 {
+  background-image: url("images/delux-saloon.jpg");
+}
+
+.bg__scrim {
+  background: linear-gradient(
+    to bottom,
+    rgba(139, 26, 26, 0.32) 0%,
+    rgba(0, 0, 0, 0.08) 38%,
+    rgba(0, 0, 0, 0.52) 100%
+  );
+}
