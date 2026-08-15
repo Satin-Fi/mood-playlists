@@ -307,6 +307,13 @@ function showStatus(msg, isError = false) {
   chatEls.status.classList.toggle('is-error', isError);
 }
 
+function chatErrorMessage(res, data, fallback) {
+  if (data?.error) return data.error;
+  if (res.status === 503) return 'Chat backend is not ready yet. Check server configuration.';
+  if (res.status === 429) return 'Too many messages. Slow down and try again.';
+  return fallback;
+}
+
 async function fetchMessages(scroll = false) {
   const room = currentMoodId();
   if (!room) return;
@@ -314,7 +321,7 @@ async function fetchMessages(scroll = false) {
     const res = await fetch(`/api/chat/messages?room=${encodeURIComponent(room)}`);
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      showStatus(data.error || 'Chat is warming up. Try again in a moment.', true);
+      showStatus(chatErrorMessage(res, data, 'Chat is warming up. Try again in a moment.'), true);
       return;
     }
     const rows = data.messages || [];
@@ -365,7 +372,7 @@ async function sendMessage(e) {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      showStatus(data.error || 'Could not send. Slow down or try again.', true);
+      showStatus(chatErrorMessage(res, data, 'Could not send. Slow down or try again.'), true);
       return;
     }
     chatEls.input.value = '';
