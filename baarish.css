@@ -9,19 +9,35 @@
 
 .bg {
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(72, 120, 140, 0.45) 0%, transparent 55%),
-    linear-gradient(180deg, #0c1820 0%, #1a3040 50%, #0a1218 100%);
+    radial-gradient(ellipse at 50% 84%, rgba(48, 108, 128, 0.58) 0%, transparent 54%),
+    linear-gradient(180deg, #040c12 0%, #0c1820 40%, #142830 68%, #2a5060 100%);
 }
 
 .bg__layer--1 {
-  background-image: url("images/baarish.jpg");
+  background-image: image-set(
+    url("images/baarish-bg-1.webp") type("image/webp"),
+    url("images/baarish-bg-1.jpg")
+  );
+}
+
+.bg__layer--2 {
+  background-position: center 38%;
+}
+
+.bg__layer--2.is-armed {
+  background-image: image-set(
+    url("images/baarish-bg-2.webp") type("image/webp"),
+    url("images/baarish-bg-2.jpg")
+  );
 }
 
 .bg__scrim {
-  background: linear-gradient(
-    to bottom,
-    rgba(10, 30, 45, 0.45) 0%,
-    rgba(0, 0, 0, 0.12) 40%,
-    rgba(0, 0, 0, 0.62) 100%
-  );
+  background:
+    radial-gradient(ellipse at center, transparent 30%, rgba(4, 16, 28, 0.58) 100%),
+    linear-gradient(
+      to bottom,
+      rgba(8, 24, 40, 0.48) 0%,
+      rgba(0, 0, 0, 0.1) 36%,
+      rgba(0, 0, 0, 0.6) 100%
+    );
 }
