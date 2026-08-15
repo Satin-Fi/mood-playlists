@@ -12,7 +12,10 @@
 const TTL_HOURS = 2;
 const MIN_GAP_SEC = 4;
 const MAX_PER_MINUTE = 12;
+const MAX_REACTIONS_PER_MINUTE = 10;
 const MAX_BODY = 280;
+
+const ALLOWED_REACTIONS = new Set(['❤️', '👍', '😂', '😮', '😢', '🔥']);
 
 const LINK_RE =
   /(https?:\/\/|www\.|\.(com|org|net|io|co|in|me|app|dev|xyz|info|biz|us|uk|tv|cc|ly|link|click|page|site|shop|store|blog|online|live|chat)\b|telegram\.me|t\.me\/|wa\.me\/|chat\.whatsapp)/i;
@@ -61,6 +64,14 @@ function roomKey(room) {
 
 function rateKey(room, clientId) {
   return `chat:rl:${room}:${clientId}`;
+}
+
+function reactionRateKey(room, clientId) {
+  return `chat:rl:react:${room}:${clientId}`;
+}
+
+function reactionKey(room, messageId) {
+  return `chat:reactions:${room}:${messageId}`;
 }
 
 function publicError(err) {
@@ -122,12 +133,51 @@ async function redisCleanupRoom(room) {
   await redisCmd(['ZREMRANGEBYSCORE', roomKey(room), '-inf', cutoff]);
 }
 
+function parseReactionValue(raw) {
+  if (!raw) return null;
+  const pipe = String(raw).indexOf('|');
+  if (pipe === -1) return { emoji: String(raw), displayName: 'Someone' };
+  return {
+    emoji: String(raw).slice(0, pipe),
+    displayName: String(raw).slice(pipe + 1) || 'Someone',
+  };
+}
+
+function aggregateReactions(hash) {
+  if (!Array.isArray(hash) || !hash.length) return [];
+  const byEmoji = new Map();
+  for (let i = 0; i < hash.length; i += 2) {
+    const clientId = hash[i];
+    const parsed = parseReactionValue(hash[i + 1]);
+    if (!parsed || !ALLOWED_REACTIONS.has(parsed.emoji)) continue;
+    let group = byEmoji.get(parsed.emoji);
+    if (!group) {
+      group = { emoji: parsed.emoji, count: 0, users: [] };
+      byEmoji.set(parsed.emoji, group);
+    }
+    group.count += 1;
+    group.users.push({ clientId, displayName: parsed.displayName });
+  }
+  return [...byEmoji.values()];
+}
+
+async function redisGetReactionsForMessages(room, messageIds) {
+  if (!messageIds.length) return new Map();
+  const entries = await Promise.all(
+    messageIds.map(async (id) => {
+      const hash = await redisCmd(['HGETALL', reactionKey(room, id)]);
+      return [id, aggregateReactions(hash)];
+    }),
+  );
+  return new Map(entries);
+}
+
 async function redisGetMessages(room) {
   const since = Date.now() - TTL_HOURS * 3600 * 1000;
   await redisCleanupRoom(room);
   const rows = await redisCmd(['ZRANGEBYSCORE', roomKey(room), since, '+inf', 'LIMIT', 0, 80]);
   if (!Array.isArray(rows)) return [];
-  return rows.map((raw) => {
+  const messages = rows.map((raw) => {
     const msg = typeof raw === 'string' ? JSON.parse(raw) : raw;
     return {
       id: msg.id,
@@ -137,6 +187,14 @@ async function redisGetMessages(room) {
       created_at: msg.created_at,
     };
   });
+  const reactionsMap = await redisGetReactionsForMessages(
+    room,
+    messages.map((m) => m.id),
+  );
+  return messages.map((m) => ({
+    ...m,
+    reactions: reactionsMap.get(m.id) || [],
+  }));
 }
 
 async function redisRateLimit(room, clientId) {
@@ -162,6 +220,54 @@ async function redisRateLimit(room, clientId) {
       throw err;
     }
   }
+}
+
+async function redisReactionRateLimit(room, clientId) {
+  const key = reactionRateKey(room, clientId);
+  const now = Date.now();
+  const sinceMinute = now - 60 * 1000;
+
+  await redisCmd(['ZREMRANGEBYSCORE', key, '-inf', sinceMinute]);
+  const count = await redisCmd(['ZCARD', key]);
+  if (Number(count) >= MAX_REACTIONS_PER_MINUTE) {
+    const err = new Error('rate_react_minute');
+    err.code = 429;
+    throw err;
+  }
+}
+
+async function redisToggleReaction(room, messageId, clientId, emoji, displayName) {
+  const key = reactionKey(room, messageId);
+  const current = await redisCmd(['HGET', key, clientId]);
+  const value = `${emoji}|${displayName}`;
+
+  if (current) {
+    const parsed = parseReactionValue(current);
+    if (parsed && parsed.emoji === emoji) {
+      await redisCmd(['HDEL', key, clientId]);
+      const remaining = await redisCmd(['HLEN', key]);
+      if (Number(remaining) === 0) {
+        await redisCmd(['DEL', key]);
+      }
+      return { action: 'removed', reactions: await redisGetMessageReactions(room, messageId) };
+    }
+  }
+
+  await redisCmd(['HSET', key, clientId, value]);
+  await redisCmd(['EXPIRE', key, TTL_HOURS * 3600]);
+  return { action: 'set', reactions: await redisGetMessageReactions(room, messageId) };
+}
+
+async function redisGetMessageReactions(room, messageId) {
+  const hash = await redisCmd(['HGETALL', reactionKey(room, messageId)]);
+  return aggregateReactions(hash);
+}
+
+async function redisRecordReactionRate(room, clientId) {
+  const now = Date.now();
+  const key = reactionRateKey(room, clientId);
+  await redisCmd(['ZADD', key, now, String(now)]);
+  await redisCmd(['EXPIRE', key, 120]);
 }
 
 async function redisInsert(room, name, text, client) {
@@ -283,7 +389,8 @@ async function cleanupOld(room) {
 
 async function getMessages(room) {
   if (chatBackend() === 'redis') return redisGetMessages(room);
-  return sbGetMessages(room);
+  const messages = await sbGetMessages(room);
+  return (messages || []).map((m) => ({ ...m, reactions: [] }));
 }
 
 async function rateLimit(room, clientId) {
@@ -294,6 +401,18 @@ async function rateLimit(room, clientId) {
 async function insertMessage(room, name, text, client) {
   if (chatBackend() === 'redis') return redisInsert(room, name, text, client);
   return sbInsert(room, name, text, client);
+}
+
+async function toggleReaction(room, messageId, clientId, emoji, displayName) {
+  if (chatBackend() !== 'redis') {
+    const err = new Error('reactions_unsupported');
+    err.code = 501;
+    throw err;
+  }
+  await redisReactionRateLimit(room, clientId);
+  const result = await redisToggleReaction(room, messageId, clientId, emoji, displayName);
+  await redisRecordReactionRate(room, clientId);
+  return result;
 }
 
 function sanitizeName(name) {
@@ -364,16 +483,50 @@ module.exports = async function handler(req, res) {
         return;
       }
 
-      const { room, displayName, body, clientId } = payload;
+      const action = String(payload.action || 'send').trim().toLowerCase();
+      const { room, displayName, body, clientId, messageId, emoji } = payload;
       const roomId = String(room || '').trim();
-      const name = sanitizeName(displayName);
-      const text = sanitizeBody(body);
       const client = String(clientId || '').trim().slice(0, 64);
 
       if (!ALLOWED_ROOMS.has(roomId)) {
         res.status(400).json({ error: 'Invalid room.' });
         return;
       }
+      if (!client) {
+        res.status(400).json({ error: 'Missing client id.' });
+        return;
+      }
+
+      if (action === 'react') {
+        const msgId = String(messageId || '').trim();
+        const reaction = String(emoji || '').trim();
+        const name = sanitizeName(displayName);
+
+        if (!msgId) {
+          res.status(400).json({ error: 'Missing message id.' });
+          return;
+        }
+        if (!ALLOWED_REACTIONS.has(reaction)) {
+          res.status(400).json({ error: 'Invalid reaction.' });
+          return;
+        }
+        if (name.length < 2) {
+          res.status(400).json({ error: 'Name too short.' });
+          return;
+        }
+
+        const result = await toggleReaction(roomId, msgId, client, reaction, name);
+        res.status(200).json({
+          messageId: msgId,
+          action: result.action,
+          reactions: result.reactions,
+        });
+        return;
+      }
+
+      const name = sanitizeName(displayName);
+      const text = sanitizeBody(body);
+
       if (name.length < 2) {
         res.status(400).json({ error: 'Name too short.' });
         return;
@@ -384,10 +537,6 @@ module.exports = async function handler(req, res) {
       }
       if (LINK_RE.test(text) || LINK_RE.test(name)) {
         res.status(400).json({ error: 'Links and promos are not allowed.' });
-        return;
-      }
-      if (!client) {
-        res.status(400).json({ error: 'Missing client id.' });
         return;
       }
 
@@ -406,10 +555,16 @@ module.exports = async function handler(req, res) {
     if (err.code === 429) {
       res.status(429).json({
         error:
-          err.message === 'rate_minute'
-            ? 'Too many messages this minute. Take a breath.'
-            : 'Slow down — one message every few seconds.',
+          err.message === 'rate_react_minute'
+            ? 'Too many reactions this minute. Slow down.'
+            : err.message === 'rate_minute'
+              ? 'Too many messages this minute. Take a breath.'
+              : 'Slow down — one message every few seconds.',
       });
+      return;
+    }
+    if (err.code === 501) {
+      res.status(501).json({ error: 'Reactions are not supported on this chat backend.' });
       return;
     }
 

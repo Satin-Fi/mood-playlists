@@ -132,7 +132,10 @@ function mountChatButton() {
 let chatEls = null;
 let pollTimer = null;
 let lastSeen = null;
+let lastReactionsSig = '';
 let chatMessagesCache = [];
+let activeReactionBar = null;
+let longPressTimer = null;
 
 const mentionState = {
   open: false,
@@ -221,10 +224,17 @@ function buildChatPanel() {
   chatEls.input.addEventListener('input', onChatInput);
   chatEls.input.addEventListener('keydown', onChatInputKeydown);
   chatEls.mentions.addEventListener('click', onMentionDropdownClick);
-  chatEls.messages.addEventListener('click', onMentionClick);
+  chatEls.messages.addEventListener('click', onMessagesClick);
+  chatEls.messages.addEventListener('pointerdown', onMessagePointerDown);
+  chatEls.messages.addEventListener('pointerup', onMessagePointerUp);
+  chatEls.messages.addEventListener('pointercancel', onMessagePointerUp);
+  chatEls.messages.addEventListener('pointerleave', onMessagePointerUp);
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && chatEls.panel.classList.contains('is-open')) closeChat();
+  });
+  document.addEventListener('click', (e) => {
+    if (!chatEls?.messages.contains(e.target)) closeReactionBars();
   });
 
   if (getDisplayName()) showChatBody();
@@ -257,6 +267,7 @@ function closeChat() {
   const openBtn = chatEls.openBtn();
   if (openBtn) openBtn.setAttribute('aria-expanded', 'false');
   document.body.classList.remove('chat-is-open');
+  closeReactionBars();
   stopPolling();
 }
 
@@ -323,9 +334,65 @@ function colorForUser(name) {
   return CHAT_PALETTE[hashDisplayName(name) % CHAT_PALETTE.length];
 }
 
-function renderMessages(rows) {
+function reactionsSignature(rows) {
+  return rows
+    .map((m) => {
+      const parts = (m.reactions || [])
+        .map((r) => `${r.emoji}:${r.count}`)
+        .sort()
+        .join(',');
+      return `${m.id}|${parts}`;
+    })
+    .join(';');
+}
+
+function myReactionForMessage(message) {
+  const clientId = getClientId();
+  for (const group of message.reactions || []) {
+    if (group.users?.some((u) => u.clientId === clientId)) return group.emoji;
+  }
+  return null;
+}
+
+function renderReactionBar(messageId) {
+  const mine = chatMessagesCache.find((m) => m.id === messageId);
+  const activeEmoji = mine ? myReactionForMessage(mine) : null;
+  return `
+    <div class="chat-reactions-bar" data-message-id="${escapeHtml(messageId)}" role="toolbar" aria-label="React to message">
+      ${REACTION_EMOJIS.map(
+        (emoji) =>
+          `<button type="button" class="chat-reactions-bar__btn${activeEmoji === emoji ? ' is-active' : ''}" data-action="react" data-message-id="${escapeHtml(messageId)}" data-emoji="${emoji}" aria-label="React ${emoji}">${emoji}</button>`,
+      ).join('')}
+    </div>`;
+}
+
+function renderReactionPills(reactions, messageId) {
+  if (!reactions?.length) return '';
+  const clientId = getClientId();
+  return `
+    <div class="chat-reactions" data-message-id="${escapeHtml(messageId)}">
+      ${reactions
+        .map((r) => {
+          const mine = r.users?.some((u) => u.clientId === clientId);
+          const names = (r.users || []).map((u) => u.displayName).join(', ');
+          return `<button type="button" class="chat-reaction-pill${mine ? ' is-mine' : ''}" data-action="reaction-pill" data-message-id="${escapeHtml(messageId)}" data-emoji="${r.emoji}" title="${escapeHtml(names)}">
+            <span class="chat-reaction-pill__emoji" aria-hidden="true">${r.emoji}</span>
+            <span class="chat-reaction-pill__count">${r.count}</span>
+          </button>`;
+        })
+        .join('')}
+    </div>`;
+}
+
+function isNearBottom(el) {
+  if (!el) return true;
+  return el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+}
+
+function renderMessages(rows, opts = {}) {
   const me = getDisplayName().toLowerCase();
   const knownNames = getRoomUsers();
+  const stickScroll = opts.forceScroll || isNearBottom(chatEls.messages);
   if (!rows.length) {
     chatEls.messages.innerHTML = `
       <div class="chat-empty">
@@ -339,27 +406,37 @@ function renderMessages(rows) {
       const isMine = me && m.display_name.toLowerCase() === me;
       const time = fmtTime(m.created_at);
       const bodyHtml = formatMessageWithMentions(m.body, knownNames);
+      const reactionsHtml = renderReactionPills(m.reactions, m.id);
+      const reactionBar = renderReactionBar(m.id);
       if (isMine) {
         return `
-    <article class="chat-msg chat-msg--mine">
-      <div class="chat-msg__bubble">
-        <p class="chat-msg__text">${bodyHtml}</p>
-        <time class="chat-msg__time" datetime="${m.created_at}">${time}</time>
+    <article class="chat-msg chat-msg--mine" data-message-id="${escapeHtml(m.id)}">
+      <div class="chat-msg__stack">
+        ${reactionBar}
+        <div class="chat-msg__bubble">
+          <p class="chat-msg__text">${bodyHtml}</p>
+          <time class="chat-msg__time" datetime="${m.created_at}">${time}</time>
+        </div>
+        ${reactionsHtml}
       </div>
     </article>`;
       }
       const c = colorForUser(m.display_name);
       return `
-    <article class="chat-msg chat-msg--other" style="--chat-bg:${c.bg};--chat-accent:${c.accent};--chat-text:${c.text}">
+    <article class="chat-msg chat-msg--other" data-message-id="${escapeHtml(m.id)}" style="--chat-bg:${c.bg};--chat-accent:${c.accent};--chat-text:${c.text}">
       <span class="chat-msg__name">${escapeHtml(m.display_name)}</span>
-      <div class="chat-msg__bubble">
-        <p class="chat-msg__text">${bodyHtml}</p>
-        <time class="chat-msg__time" datetime="${m.created_at}">${time}</time>
+      <div class="chat-msg__stack">
+        ${reactionBar}
+        <div class="chat-msg__bubble">
+          <p class="chat-msg__text">${bodyHtml}</p>
+          <time class="chat-msg__time" datetime="${m.created_at}">${time}</time>
+        </div>
+        ${reactionsHtml}
       </div>
     </article>`;
     })
     .join('');
-  chatEls.messages.scrollTop = chatEls.messages.scrollHeight;
+  if (stickScroll) chatEls.messages.scrollTop = chatEls.messages.scrollHeight;
 }
 
 function escapeHtml(str) {
@@ -572,6 +649,166 @@ function onMentionClick(e) {
   hideMentionDropdown();
 }
 
+function closeReactionBars() {
+  activeReactionBar = null;
+  chatEls?.messages.querySelectorAll('.chat-msg__stack.is-reacting').forEach((el) => {
+    el.classList.remove('is-reacting');
+  });
+}
+
+function openReactionBar(stack, messageId) {
+  closeReactionBars();
+  activeReactionBar = messageId;
+  stack.classList.add('is-reacting');
+}
+
+function onMessagePointerDown(e) {
+  const stack = e.target.closest('.chat-msg__stack');
+  if (!stack || e.target.closest('.chat-reactions-bar__btn, .chat-reaction-pill')) return;
+  const msg = stack.closest('.chat-msg');
+  const messageId = msg?.dataset.messageId;
+  if (!messageId) return;
+
+  if (longPressTimer) clearTimeout(longPressTimer);
+  longPressTimer = setTimeout(() => {
+    openReactionBar(stack, messageId);
+    longPressTimer = null;
+  }, 420);
+}
+
+function onMessagePointerUp() {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+}
+
+function onMessagesClick(e) {
+  const mentionBtn = e.target.closest('.chat-mention');
+  if (mentionBtn) {
+    onMentionClick(e);
+    return;
+  }
+
+  const reactBtn = e.target.closest('[data-action="react"]');
+  if (reactBtn) {
+    e.preventDefault();
+    const messageId = reactBtn.dataset.messageId;
+    const emoji = reactBtn.dataset.emoji;
+    if (messageId && emoji) toggleReaction(messageId, emoji);
+    return;
+  }
+
+  const pillBtn = e.target.closest('[data-action="reaction-pill"]');
+  if (pillBtn) {
+    e.preventDefault();
+    const messageId = pillBtn.dataset.messageId;
+    const emoji = pillBtn.dataset.emoji;
+    if (messageId && emoji) toggleReaction(messageId, emoji);
+    return;
+  }
+
+  if (!e.target.closest('.chat-msg__stack')) {
+    closeReactionBars();
+  }
+}
+
+function applyOptimisticReaction(messageId, emoji) {
+  const clientId = getClientId();
+  const displayName = getDisplayName();
+  const msg = chatMessagesCache.find((m) => m.id === messageId);
+  if (!msg) return;
+
+  const reactions = (msg.reactions || []).map((r) => ({
+    emoji: r.emoji,
+    count: r.count,
+    users: (r.users || []).map((u) => ({ ...u })),
+  }));
+
+  let removed = false;
+  for (let i = reactions.length - 1; i >= 0; i -= 1) {
+    const group = reactions[i];
+    const userIdx = group.users.findIndex((u) => u.clientId === clientId);
+    if (userIdx === -1) continue;
+    if (group.emoji === emoji) {
+      group.users.splice(userIdx, 1);
+      group.count -= 1;
+      if (group.count <= 0) reactions.splice(i, 1);
+      removed = true;
+    } else {
+      group.users.splice(userIdx, 1);
+      group.count -= 1;
+      if (group.count <= 0) reactions.splice(i, 1);
+    }
+    break;
+  }
+
+  if (!removed) {
+    let group = reactions.find((r) => r.emoji === emoji);
+    if (!group) {
+      group = { emoji, count: 0, users: [] };
+      reactions.push(group);
+    }
+    group.users.push({ clientId, displayName });
+    group.count += 1;
+  }
+
+  msg.reactions = reactions;
+  renderMessages(chatMessagesCache);
+  const stack = chatEls.messages.querySelector(`[data-message-id="${CSS.escape(messageId)}"] .chat-msg__stack`);
+  if (stack) stack.classList.add('is-reacting');
+}
+
+async function toggleReaction(messageId, emoji) {
+  const room = currentMoodId();
+  const displayName = getDisplayName();
+  if (!room || !displayName || !messageId || !emoji) return;
+
+  const prevCache = chatMessagesCache.map((m) => ({
+    ...m,
+    reactions: (m.reactions || []).map((r) => ({
+      emoji: r.emoji,
+      count: r.count,
+      users: (r.users || []).map((u) => ({ ...u })),
+    })),
+  }));
+
+  applyOptimisticReaction(messageId, emoji);
+  showStatus('');
+
+  try {
+    const res = await fetch('/api/chat/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'react',
+        room,
+        messageId,
+        clientId: getClientId(),
+        displayName,
+        emoji,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      chatMessagesCache = prevCache;
+      renderMessages(chatMessagesCache);
+      showStatus(chatErrorMessage(res, data, 'Could not react. Try again.'), true);
+      return;
+    }
+    const msg = chatMessagesCache.find((m) => m.id === messageId);
+    if (msg && data.reactions) {
+      msg.reactions = data.reactions;
+      lastReactionsSig = reactionsSignature(chatMessagesCache);
+      renderMessages(chatMessagesCache);
+    }
+  } catch {
+    chatMessagesCache = prevCache;
+    renderMessages(chatMessagesCache);
+    showStatus('Network hiccup. Try again.', true);
+  }
+}
+
 function showStatus(msg, isError = false) {
   chatEls.status.hidden = !msg;
   chatEls.status.textContent = msg || '';
@@ -598,10 +835,11 @@ async function fetchMessages(scroll = false) {
     const rows = data.messages || [];
     chatMessagesCache = rows;
     const newest = rows.length ? rows[rows.length - 1].id : null;
-    if (newest !== lastSeen || scroll) {
-      renderMessages(rows);
-      if (scroll) chatEls.messages.scrollTop = chatEls.messages.scrollHeight;
+    const reactionsSig = reactionsSignature(rows);
+    if (newest !== lastSeen || reactionsSig !== lastReactionsSig || scroll) {
+      renderMessages(rows, { forceScroll: scroll });
       lastSeen = newest;
+      lastReactionsSig = reactionsSig;
     }
     showStatus('');
   } catch {
